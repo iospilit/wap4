@@ -1,0 +1,158 @@
+{# Chú ý:
+# Cửa hàng: id.item.HP.money
+# Rương VP: ao.quan.canh.docamtay.khac.khuonmat.kinh.mat.matna.non.nen.thucung.toc
+#}
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set get_shop = get_data('shop_avatar')[0].data|json_decode %}
+{% set title = 'Cửa hàng Avatar' %}
+{{block('head')}}
+{% if signin %}
+<div class="phdr"><b><a href="/avatar">Cửa hàng</a> {% if url[1] in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %} / {%if url[1]=='ao' %}Áo{% elseif url[1]=='quan' %}Quần{% elseif url[1]=='canh' %}Cánh{% elseif url[1]=='docamtay' %}Đồ cầm tay{% elseif url[1]=='khac' %}Hào quang{% elseif url[1]=='khuonmat' %}Khuôn mặt{% elseif url[1]=='kinh' %}Kính{% elseif url[1]=='mat' %}Mắt{% elseif url[1]=='matna' %}Mặt nạ{% elseif url[1]=='non' %}Nón{% elseif url[1]=='nen' %}Nền sau{% elseif url[1]=='thucung' %}Thú cưng{% elseif url[1]=='toc' %}Tóc{% endif %}{% endif %}{% if get_get('act')=='buy' and get_get('id')!='' %} / Mua <a href="/avatar/{{url[1]}}">(quay lại)</a>{% endif %}</b></div>
+{% if url[1] in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %}
+{% set data = func.get('shop_avatar',url[1])|trim|split('@') %}
+{% set total = data|length-1 %}
+{% set per='10' %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url=get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == 0 %}
+<div class="menuItem" style="background-color:#e9ccd2;">Các vật phẩm có nhãn này, cửa hàng đã bán hết. Vui lòng quay lại sau !</div>
+{% else %}
+{% if get_get('act')=='buy' and get_get('id')!='' %}
+{% set id = get_get('id')|trim-1 %}
+{% set buy = func.get('shop_avatar',url[1])|trim|split('@')[id]%}
+{% set list_vp = (user['chest'])[url[1]]|trim|split('.') %}
+<div class="menuItem">
+<table id="{{url[1]}}{{data1|split('.')[0]|trim}}" cellpadding="0" cellspacing="1"><tr><td width="auto"><img class="avt" src="
+http://valeric.000webhostapp.com/avatar/images/{{url[1]}}/{{buy|split('.')[1]|trim}}.png" width="40" height="40" /></td><td><i class="fa fa-shopping-bag"></i> <b>Mua vật phẩm</b><br/><i class="fa fa-fire"></i> HP: <font color="green">+ {{buy|split('.')[2]|trim}}</font><br/><i class="fa fa-money"></i> Giá: {{(buy|split('.')[3]|trim)|number_format}} xu</td></tr></table>
+</div>
+<div class="menuItem">
+<div class="list1">
+{% if buy|split('.')[1]|trim in list_vp %}
+<center><font color="red">Xin lỗi! Bạn không thể mua vật phẩm này, vì vật phẩm đã tồn tại trong rương.</font></center>
+{% else %}
+{% if url[1] not in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %}
+<center><font color="red">Xin lỗi! Bạn không thể mua vật phẩm này, vì vật phẩm không còn được bày bán trong cửa hàng.</font></center>
+{% else %}
+{# buy item #}
+{% if request_method()|lower=="post" %}
+{% if user.xu|trim < buy|split('.')[3]|trim %}
+Bạn không đủ tiền để mua vật phẩm này. <a href="/avatar">Click để trở lại cửa hàng</a>
+{% else %}
+{% if get_post('check_buy')=='yes' and buy|split('.')[0]|trim not in list_vp %}
+{% if url[1]=='ao' %}
+{% set save_chest = {"ao":user['chest'].ao~''~buy|split('.')[1]|trim~'.',"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='quan' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan~''~buy|split('.')[1]|trim~'.',"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='canh' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh~''~buy|split('.')[1]|trim~'.',"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='docamtay' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay~''~buy|split('.')[1]|trim~'.',"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='khac' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac~''~buy|split('.')[1]|trim~'.',"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='khuonmat' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat~''~buy|split('.')[1]|trim~'.',"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='kinh' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh~''~buy|split('.')[1]|trim~'.',"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='mat' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat~''~buy|split('.')[1]|trim~'.',"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='matna' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna~''~buy|split('.')[1]|trim~'.',"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='non' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non~''~buy|split('.')[1]|trim~'.',"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='nen' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen~''~buy|split('.')[1]|trim~'.',"thucung":user['chest'].thucung,"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='thucung' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung~''~buy|split('.')[1]|trim~'.',"toc":user['chest'].toc} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~buy|split('.')[1]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='toc' %}
+{% set save_chest = {"ao":user['chest'].ao,"quan":user['chest'].quan,"canh":user['chest'].canh,"docamtay":user['chest'].docamtay,"khac":user['chest'].khac,"khuonmat":user['chest'].khuonmat,"kinh":user['chest'].kinh,"mat":user['chest'].mat,"matna":user['chest'].matna,"non":user['chest'].non,"nen":user['chest'].nen,"thucung":user['chest'].thucung,"toc":user['chest'].toc~''~buy|split('.')[1]|trim~'.'} %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~buy|split('.')[1]|trim %}
+{% endif %}
+{% set save_hp = {"min":(user['hp'].min)|trim+buy|split('.')[2]|trim,"max":(user['hp'].max)|trim+buy|split('.')[2]|trim} %}
+{{func.add('user_'~signin,'xu',user['xu']|trim-buy|split('.')[3]|trim)}}
+{{func.add('user_'~signin,'avatar',save_avatar)}}
+{{func.add('user_'~signin,'chest',save_chest)}}
+{{func.add('user_'~signin,'hp',save_hp)}}
+<p><font color="green">Mua thành công ! </font><a href="/chest/{{url[1]}}">Click vào đây</a> để vào rương vật phẩm của bạn.</p>
+<script language="javascript" type="text/javascript"> 
+window.location.href="/chest/{{url[1]}}"; 
+</script> 
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/chest/{{url[1]}}">
+{% else %}
+<p>Nếu bạn chắc rằng bạn không muốn mua vật phẩm này, hãy <a href="/avatar/{{url[1]}}">click vào đây</a> để tham khảo thêm các vật phẩm khác có nhãn tương tự của cửa hàng !</p>
+{% endif %}
+{% endif %}
+{% else %}
+<form action"" method="post">
+<p>Bạn có chắc chắn muốn mua vật phẩm này không?</p>
+<select name="check_buy"><option value="yes">Ok, mua luôn !</option> <option value="no">Thôi, không mua nữa !</option>
+</select>
+<p><input class="btn btn-primary" type="submit" name="submit" value="Giao dịch"></p>
+</form>
+{% endif %}
+{# end # code by valerat02 #}
+{% endif %}
+{% endif %}
+</div>
+</div>
+{% else %}
+<div class="menuItem" style="background-color:#e9ccd2;"><b style="color:red">*</b> Mua các vật phẩm chỉ có tác dụng tăng giới hạn tối đa của HP, không tăng sức mạnh.</div>
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set i = i|trim-1 %}
+{% set data1 = func.get('shop_avatar',url[1])|trim|split('@')[i]%}
+<div class="menuItem">
+<table id="{{url[1]}}{{data1|split('.')[0]|trim}}" cellpadding="0" cellspacing="1"><tr><td width="auto"><img class="avt" src="
+http://valeric.000webhostapp.com/avatar/images/{{url[1]}}/{{data1|split('.')[1]|trim}}.png" width="40" height="40" /></td><td><i class="fa fa-fire"></i> HP: <font color="green">+ {{data1|split('.')[2]|trim}}</font><br/><i class="fa fa-money"></i> Giá: {{(data1|split('.')[3]|trim)|number_format}} xu<br/><a href="/{{url[0]}}/{{url[1]}}/?act=buy&id={{data1|split('.')[0]|trim}}"><button>Mua</button></a></td></tr></table>
+</div>
+{% endfor %}
+{{avatar.page_item('../avatar/'~url[1]~'/?p',p,page_max)}}
+{% endif %}
+{% endif %}
+{% else %}
+{% if user.right in [9,2] %}<div class="rmenu"><a href="/AshopPanel"><b>Thêm vật phẩm</b></a></div>{% endif %}
+<div class="list-login">» <a href="../{{url[0]}}/ao">Áo</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/quan">Quần</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/docamtay">Đồ cầm tay</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khac">Hào quang</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khuonmat">Khuôn mặt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/kinh">Kính</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/mat">Mắt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/matna">Mặt nạ</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/non">Nón</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/nen">Nền sau</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/thucung">Thú cưng</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/toc">Tóc</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/canh">Cánh</a></div>
+{% endif %}
+{% else %}
+<div class="rmenu" style="background-color:#e9ccd2;">Chức năng này chỉ dành cho thành viên của cộng đồng !</div>
+{% endif %}
+{{block('end')}}

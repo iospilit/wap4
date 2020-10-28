@@ -1,0 +1,60 @@
+{# Chú ý:
+# Cửa hàng: id.item.HP.money
+# Rương VP: ao.quan.canh.docamtay.khac.khuonmat.kinh.mat.matna.non.nen.thucung.toc
+#}
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set get_shop = get_data('shop_avatar')[0].data|json_decode %}
+{% set title = 'Thêm vật phẩm vào cửa hàng Avatar' %}
+{{block('head')}}
+{% if signin and user.right in [9,2] %}
+{% if url[1] not in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %}
+<div class="phdr"><a href="/avatar"><b>Cửa hàng Avatar</b></a> » Thêm vật phẩm</b></div> 
+<div class="list-login">» <a href="../{{url[0]}}/ao">Áo</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/quan">Quần</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/docamtay">Đồ cầm tay</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khac">Hào quang</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khuonmat">Khuôn mặt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/kinh">Kính</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/mat">Mắt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/matna">Mặt nạ</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/non">Nón</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/nen">Nền sau</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/thucung">Thú cưng</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/toc">Tóc</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/canh">Cánh</a></div>
+{% else %}
+{% set id_item = func.get('shop_avatar',url[1])|trim|split('@')|length %}
+<div class="phdr"><a href="/avatar"><b>Cửa hàng Avatar</b></a> » <a href="/{{url[0]}}"><b>Thêm vật phẩm</b></a> » {{url[1]}}</div>
+<div class="list-login">
+{% if request_method()|lower == "post" %}
+{% set content = id_item~'.'~get_post("vp")~'.'~get_post("sm")~'.'~get_post("gia")~' @ ' %}
+{{func.add('shop_avatar',url[1],get_shop[url[1]]~''~content)}}
+<div class="rmenu">Thêm vật phẩm thành công <a href="/avatar/{{url[1]}}/?act=buy&id={{id_item}}">Xem thử >> </a></div>
+<script language="javascript" type="text/javascript">
+window.location.href="/avatar/{{url[1]}}/?act=buy&id={{id_item}}";
+</script> 
+<meta http-equiv="refresh" content="0; url={{current_url|split('/').0~"//"~current_url|split('/').2}}/avatar/{{url[1]}}/?act=buy&id={{id_item}}">
+{% endif %}
+<form method="post" action="">
+<p><b>ID vật phẩm trong cửa hàng: <font color="red">{{id_item}}</font></b></p>
+<p><b>Mã số vật phẩm:</b> <i>(lấy mã số ở máy chủ lưu trữ hình ảnh của vật phẩm)</i></p>
+<input type="number" name="vp" value="{{get_post("item")|default(0)}}">
+<p><b>Sức mạnh:</b> <i>(chỉ số mặc định được cộng tối đa khi mua)</i></p>
+<input type="number" name="sm" value="{{get_post("sm")|default(0)}}">
+<p><b>Giá vật phẩm:</b></p>
+<input type="number" name="gia" value="{{get_post("gia")|default(0)}}">
+<p><input class="btn btn-primary" type="submit" name="submit" value="Thêm vật phẩm"></p>
+</form>
+</div>
+{% endif %}
+{% else %}
+<div class="phdr"><b>{% if signin %}{{title}}{% else %}Lỗi truy cập!{% endif %}</b></div>
+<div class="rmenu">Bạn đếch có quyền vào đây. Ahihi :))</div>
+{% endif %}
+{{block('end')}}

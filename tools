@@ -1,0 +1,223 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% set url = get_uri_segments() %}
+{% if url[1] in ['s-shot.php','teamobi','calculator','calculator.php'] %}
+{% if url[1]=='s-shot.php' %}
+{% set title = 'Chụp ảnh màn hình wap/web' %}
+{% elseif url[1]=='teamobi' %}
+{% set title = 'Lấy ảnh nhân vật game TeaMobi' %}
+{% elseif url[1]=='calculator.php' %}
+{% set title = 'Toán tử cơ bản' %}
+{% elseif url[1]=='calculator' and url[2]=='factorial.php' %}
+{% set title = 'Phép hoán vị n!' %}
+{% elseif url[1]=='calculator' and url[2]=='nPr-nCr.php' %}
+{% set title = 'Chỉnh hợp - Tổ hợp' %}
+{% elseif url[1]=='calculator' and url[2]=='equation.php' %}
+{% set title = 'Giải PT bậc hai' %}
+{% endif %}
+{{block('head')}}
+<div class="phdr"><span id="title"><a href="/tools#t"><b>Công cụ tiện ích</b></a> » </span>{{title}}</div>
+<div class="list-login" align="center">
+{% if url[1]=='s-shot.php' %}
+{% set mh=get_post('mh') %}
+{% set weight=get_post('weight') %}
+{% set height=get_post('height') %}
+{% if request_method()|lower == 'post' %}
+<p>Ảnh chụp màn hình của web <b>{{mh}}</b></p>
+<p><img src="http://mini.s-shot.ru/{{weight}}x{{height}}/{{weight}}/png/?{{mh}}" width="200" height="250" alt="{{mh}}" class="border"/><br />[<a rel="nofollow" href="http://mini.s-shot.ru/{{weight}}x{{height}}/{{weight}}/png/?{{mh}}"><b><font color="blue">Tải về máy {{weight}}x{{height}}</font></b></a>]</p>
+<div>Link ảnh:</div>
+<textarea row="2">http://mini.s-shot.ru/{{weight}}x{{height}}/{{weight}}/png/?{{mh}}</textarea>
+<div>BBCODE:</div>
+<textarea row="2">[img]http://mini.s-shot.ru/{{weight}}x{{height}}/{{weight}}/png/?{{mh}}[/img]</textarea>
+{% else %}
+<form action="" method="post">
+<p><b>Tìm ảnh màn hình wap/web</b></p>
+<div class="f">URL Web (chứa cả <i>http hoặc</i> <i>https</i>):</div>
+<input type="text"name="mh" value="http://" size="15" />
+<div class="f">Chiều rộng:</div>
+<input type="text"name="weight" value="1200" size="15" />
+<div class="f">Chiều dài:</div>
+<input type="text"name="height" value="1500" size="15" />
+<p><input class="btn btn-primary" type="submit" value="Chụp ảnh"></p></form>
+{% endif %}
+{% elseif url[1]=='teamobi' %}
+{% set nhanvat=get_post('nv') %}
+{% if url[2]=='avatar.php' or not url[2]%}
+<p><b>Lấy ảnh nhân vật game Avatar</b></p>
+{% if request_method()|lower == 'post' %}
+<p>Ảnh trong game Avatar của nhân vật <b>{{nhanvat}}</b></p>
+<p><img src="http://27.0.14.78/services/avatar/image2/{{nhanvat}}.gif" alt="{{nhanvat}}"/></p><p><a rel="nofollow" href="http://27.0.14.78/services/avatar/image2/{{nhanvat}}.gif"><b><font color="red">[Tải về máy]</font></b></a></p>
+{% else %}
+<form action="" method="post">
+<div class="f">Nhập tên nhân vật: (Lưu ý: Nhập chính xác tên nhân vật trong game của bạn)</div>
+<input type="text"name="nv" value="" size="15" />
+<p><input class="btn btn-primary" type="submit" value="Lấy ảnh"></form></p>
+{% endif %}
+<p><div class="f">» <a href="/tools/teamobi/nso.php">Lấy ảnh nhân vật game Ninja School</a></div></p>
+{% elseif url[2]=='nso.php' %}
+<p><b>Lấy ảnh nhân vật game Ninja School</b></p>
+{% if request_method()|lower == 'post' %}
+<p>Ảnh trong game NSO của nhân vật <b>{{nhanvat}}</b></p>
+<p><img src="http://27.0.14.78/services/ninja/image/{{nhanvat}}.gif" alt="{{nhanvat}}"/></p><p><a rel="nofollow" href="http://27.0.14.78/services/ninja/image/{{nhanvat}}.gif"><b><font color="red">[Tải về máy]</font></b></a></p>
+{% else %}
+<form action="" method="post">
+<div class="f">Nhập tên nhân vật: (Lưu ý: Nhập chính xác tên nhân vật trong game của bạn)</div>
+<input type="text"name="nv" value="" size="15" />
+<p><input class="btn btn-primary" type="submit" value="Lấy ảnh"></p></form>
+{% endif %}
+<p><div class="f">» <a href="/tools/teamobi/avatar.php">Lấy ảnh nhân vật game Avatar</a></div></p>
+{% endif %}
+{% elseif url[1]=='calculator.php' %}
+<p><b>Máy tính phép toán</b></p>
+{% set so1 = get_post('so1') %}
+{% set so2 = get_post('so2') %}
+{% set toantu = get_post('toantu') %}
+{% if request_method()|lower == "post" %}
+{% if not so1 or not so2 %}
+{% set ketqua='Bạn chưa nhập số' %}
+{% else %}
+{% if toantu=='+' %}
+{% set ketqua=so1+so2 %}
+{% elseif toantu=='-' %}
+{% set ketqua=so1-so2 %}
+{% elseif toantu=='x' %}
+{% set ketqua=so1*so2 %}
+{% elseif toantu=='/' %}
+{% set ketqua=so1/so2 %}
+{% endif %}
+{% endif %}
+<div class="f">
+{% if not so1 or not so2 %}
+{% else %}{{so1}} {{toantu}} {{so2}} = {% endif %}<b>{{ketqua}}</b>
+</div>
+{% endif %}
+<form method="post" action="">
+<div class="f">Số 1: </div>
+<input name="so1" type="number">
+<div class="f">Phép toán: <select name="toantu">
+    <option value = "+">Cộng</option>
+    <option value = "-">Trừ</option>
+    <option value = "x">Nhân</option>
+    <option value = "/">Chia</option>            
+    </select></div>
+<div class="f">Số 2: </div><input name="so2" type="number">
+<p><input class="btn btn-primary" name="submit" type="submit" value="Tính"></p>     
+</form>
+{% elseif url[1]=='calculator' and url[2]=='factorial.php' %}
+<p><b>n! (n giai thừa)</b></p>
+{% set n = get_post('n') %}
+{% if request_method()|lower == "post" and n!=null %}
+{% set gt = 1 %}
+{% for i in 1..n %}
+{% if n=='0' %}
+{% set gt = 1 %}
+{% else %}
+{% set gt = gt*i %}
+{% endif %}
+{% endfor %}
+<div class="f"><b>{{n}}!</b> = {% if n > 170 %}Math ERROR{% else %}{{gt|replace({'E':'','+':'×10^'})}}{% endif %}</div>
+{% endif %}
+<form method="post" action="">
+<div class="f">Số n: </div>
+<input name="n" type="number" value="{{n}}">
+<p><input class="btn btn-primary" name="submit" type="submit" value="Tính"></p>     
+</form>
+{% elseif url[1]=='calculator' and url[2]=='nPr-nCr.php' %}
+<p><b>Chỉnh hợp / Tổ hợp chập k của n phần tử</b></p>
+{% set n = get_post('n') %}
+{% set k = get_post('k') %}
+{% set pc = get_post('pc') %}
+{% if request_method()|lower == "post" %}
+{% set ngt = 1 %}
+{% set kgt = 1 %}
+{% set n_kgt = 1 %}
+{% for i1 in 1..n %}
+{% set ngt = ngt*i1 %}
+{% endfor %}
+{% for i2 in 1..k %}
+{% set kgt = kgt*i2 %}
+{% endfor %}
+{% for i3 in 1..(n-k) %}
+{% set n_kgt = n_kgt*i3 %}
+{% endfor %}
+<div class="f">
+{% if pc == 'nPr' and (1<=k and k<=n) %}
+Chỉnh hợp chập <b>{{k}}</b> của <b>{{n}}</b> bằng <b>{{(ngt/n_kgt)|replace({'E':'','+':'×10^'})}}</b>
+{% elseif pc == 'nCr' and (0<=k and k<=n)%}
+Tổ hợp chập <b>{{k}}</b> của <b>{{n}}</b> bằng <b>{{(ngt/(n_kgt*kgt))|replace({'E':'','+':'×10^'})}}</b>
+{% else %}
+Math ERROR
+{% endif %}
+</div>
+{% endif %}
+<form method="post" action="">
+<div class="f">Số n: </div>
+<input name="n" type="number" value="{{n}}">
+<div class="f">Số k: </div>
+<input name="k" type="number" value="{{k}}">
+<div class="f">Phép tính: <select name="pc" size="1" style="border: 0;"><option value="{{pc}}" selected>Chỉnh hợp / Tổ hợp</option><option value="nPr" >Chỉnh hợp</option><option value="nCr">Tổ hợp</option></select></div>
+<p><input class="btn btn-primary" name="submit" type="submit" value="Tính"></p>     
+</form>
+{% elseif url[1]=='calculator' and url[2]=='equation.php' %}
+{% set a = get_post('a') %}
+{% set b = get_post('b') %}
+{% set c = get_post('c') %}
+{% set d = get_post('d') %}
+{% set e = get_post('e') %}
+{% set delta = b*b-4*a*c %}
+{% set absdelta = delta|abs %}
+{% set sqrtdelta = absdelta**(1/2) %}
+{% if a == 0 %}
+{% set kq = 'Nghiệm duy nhất' %}
+{% set x1 = -c/b %}
+{% set x2 = x1 %}
+{% else %}
+{% if delta>=0 %}
+{% if delta==0 %}
+{% set kq = 'Nghiệm kép' %}
+{% else %}
+{% set kq = '2 nghiệm phân biệt' %}
+{% endif %}
+{% set x1 = (-b+sqrtdelta)/(2*a) %}
+{% set x2 = (-b-sqrtdelta)/(2*a) %}
+{% else %}
+{% set kq = 'Nghiệm phức' %}
+{% set R = -b/(2*a) %}
+{% set i = sqrtdelta/(2*a) %}
+{% set x1 = R~'+'~i~'i' %}
+{% set x2 = R~'-'~i~'i' %}
+{% endif %}
+{% endif %}
+<p><b>Giải PT bậc hai một ẩn</b></p>
+<form action="" method="post">
+<div class="f">Nhập hệ số a: </div>
+<p><input name="a" type="number" value="{{a|default()}}" /></p>
+<div class="f">Nhập hệ số b: </div>
+<p><input type="number" name="b" value="{{b|default()}}" /></p>
+<div class="f">Nhập hệ số c: </div>
+<p><input type="number" name="c" value="{{c|default()}}" /></p> 
+<p> <input class="btn btn-primary" type="submit" value="Bắt đầu giải"></p> 
+<p><a href="/tools/calculator/equation.php"><input class="btn btn-primary" type="button" value="Nhập lại" /></a></p>
+</form>
+{% if request_method()|lower == 'post' %}
+<div class="f">Kết quả: </div>
+<p><input type="text" placeholder="{{kq}}" /></p>
+<div class="f">Nghiệm 1: </div>
+<p><input type="text" placeholder="{{x1}}"></p>
+<div class="f">Nghiệm 2: </div>
+<p><input type="text" placeholder="{{x2}}"></p>
+{% endif %}
+
+{% endif %}
+</div>
+<div id="select-tool">
+<div class="phdr"><i class="fa fa-wrench" aria-hidden="true"></i> Công cụ tiện ích</div>
+<div class="list-login menu-topic list-item">» <a href="/tools/s-shot.php">Chụp ảnh màn hình wap/web</a></div>
+<div class="list-login menu-topic list-item">» <a href="/tools/teamobi">Lấy ảnh nhân vật game Teamobi</a></div>
+<div class="list-login menu-topic list-item">» <a href="/tools/calculator/equation.php">Giải phương trình bậc 2 một ẩn</a></div>
+<div class="list-login menu-topic list-item">» <a href="/tools/calculator/factorial.php">Hoán vị (n giai thừa)</a> / <a href="/tools/calculator/nPr-nCr.php">Chỉnh hợp - Tổ hợp</a></div>
+</div>
+{{block('end')}}
+{% else %}
+{% include 'games' %}
+{% endif %}

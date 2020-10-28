@@ -1,0 +1,336 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set login = signin %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set act = get_get('act') %}
+{% set select = get_get('seclect') %}
+{% if act=='eggs' %}
+{% set title = 'Đập trứng' %}
+{% elseif act=='baodanh' %}
+{% set title = 'Báo danh hằng ngày' %}
+{% elseif act=='pro' %}
+{% set title = 'Mua PRO' %}
+{% elseif act=='vip' %}
+{% set title = 'Mua VIP' %}
+{% elseif act=='napxu' %}
+{% set title = 'Nạp xu vào tài khoản' %}
+{% elseif act=='napluong' %}
+{% set title = 'Đổi xu ra lượng' %}
+{% else %}
+{% if signin %}
+{% set title = 'Danh mục' %}
+{% else %}
+{% set title = 'Trang cá nhân' %}
+{% endif %}
+{% endif %}
+{% if signin %}
+{% set id_event = func.get('event')|split('@')[19]|trim %}
+{{block('head')}}
+{% if signin %}
+<div class="phdr border_red">Trang cá nhân</div>
+<div>
+<div class=profileCard> <div style="background-color: #6a7582;border-left: 0px solid #1a1a1b;border-right: 0px solid #1a1a1b; border-bottom: 0px solid #1a1a1b;border-radius: 0px 0px 0px 0px;border-top-width: 0;padding: 0px;"color: #f3f7fd;text-decoration: none;text-shadow: 0 0 1px #000000;align=left> <table cellpadding=0 cellspacing=0 width="100%" height=110px style=" height: 200px; width: 100%;background-size: cover;background-repeat: no-repeat; background-position: 50% 50%;border-radius: 0px 0px 0px 0px;position: relative;background-image:url('{{avatar.avtdefault(signin,'abia')|trim}}');"> <div class=profileInfo> <tr valign=top> <td width=38 style="background: #0000004f;padding: 13px;border-left: 115px solid #0000002e;"> <div style="position: absolute;z-index: 1;bottom: 0px;left: 0;right: 0;padding-left: 5px;line-height: 50px;"> <img src="{{avatar.avtdefault(signin)|trim}}" class="avtdefault" alt="{{user.name}}"></td></div> <td><div><b> <div style="color: #fff; text-decoration: none; text-shadow: 0 0 1px #000000; position: absolute; z-index: 1; bottom: 7px; left: 0; right: 0; padding-right: 7px; line-height: 40px; text-align: right;">{{avatar.level(user.postguest|default(0),'profile')}} {{avatar.mau_nick(signin,user.right)}} (@{{signin}})</div> </b></div> <div style="color: #bec7d6; text-decoration: none; text-shadow: 0 0 1px #000000; position: absolute; z-index: 1; bottom: 5px; left: 0; right: 0; padding-right: 7px; line-height: 10px; text-align: right; font-size: 12px;"><span class="status">{% if user.stt!='' or user.stt!=null %}{{user.stt}}{% endif %} - <a style="color:white" href="?update=stt">Cập nhật</a>.</span></div></div> </td></tr> </table> </div> </div>
+{% endif %}
+<div id="left">
+<div class="phdr" id="g">{% if act!='' %}<a href="/games#g">{% else %}<i class="fa fa-gamepad" aria-hidden="true"></i> {% endif %}Khu giải trí{% if act!='' %}</a> » {{title}}{% endif %}</div>
+{% if act=='napxu' %}
+<style>.table{padding: 0; border: none; border-collapse: collapse; border: 1px solid #70b582; color: #70b582;}.table td{padding: 0; border: none; border-collapse: collapse;}.table tr>td, .table tr>th{border: 1px solid #ddd; padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: normal;}</style>
+<div class="list-login">
+<b>Bảng giá nạp xu:</b><br>• <font color="#ffffff">Nhận thẻ Viettel, Vina</font><br>
+<p><table width="100%" class="table">
+<tr><td width="10%"><font color="#ff0000">10k</font></td><td>12.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">20k</font></td><td>30.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">50k</font></td><td>70.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">100k</font></td><td>150.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">200k</font></td><td>300.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">500k</font></td><td>700.000.000 Xu</td></tr>
+</table></p>
+• <font color="#ffffff"><b>ĐẶC BIỆT</b></font>: Khi nạp qua TCSR hoặc Carrot sẽ được nhận thêm ưu đãi. Cụ thể như sau:<br>
+<p><table width="100%" class="table">
+<tr><td width="10%"><font color="#ff0000">10k</font></td><td>12.000.000 + 3.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">20k</font></td><td>30.000.000 + 5.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">50k</font></td><td>70.000.000 + 15.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">100k</font></td><td>150.000.000 + 50.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">200k</font></td><td>300.000.000 + 150.000.000 Xu</td></tr>
+<tr><td width="10%"><font color="#ff0000">500k</font></td><td>700.000.000 + 300.000.000 Xu</td></tr>
+</table></p>
+</div>
+<div class="phdr">Lich sử nạp thẻ</div>
+<div class="list-login">Chức năng hiện đang được bảo trì. Vui lòng quay lại sau !</div>
+{% elseif act=='napluong' %}
+<style>.table{padding: 0; border: none; border-collapse: collapse; border: 1px solid #70b582; color: #70b582;}.table td{padding: 0; border: none; border-collapse: collapse;}.table tr>td, .table tr>th{border: 1px solid #ddd; padding: 8px; line-height: 1.42857143; vertical-align: top; border-top: 1px solid #ddd; font-weight: normal;}</style>
+<div class="list-login">
+<p>Đổi xu ra lượng để thực hiện các giao dịch liên quan đến mua bán vật phẩm như: website template (mẫu giao diện web), source code (mã nguồn), tài khoản game online,... trong diễn đàn.</p>
+<b>Bảng giá đổi lượng:</b><br>
+<p><table width="100%" class="table">
+<tr><td width="50%"><font color="#ff0000">10.000 lượng</font></td><td>15.000.000 Xu</td></tr>
+<tr><td width="50%"><font color="#ff0000">20.000 lượng</font></td><td>50.000.000 Xu</td></tr>
+<tr><td width="50%"><font color="#ff0000">50.000 lượng</font></td><td>90.000.000 Xu</td></tr>
+<tr><td width="50%"><font color="#ff0000">100.000 lượng</font></td><td>300.000.000 Xu</td></tr>
+<tr><td width="50%"><font color="#ff0000">200.000 lượng</font></td><td>500.000.000 Xu</td></tr>
+<tr><td width="50%"><font color="#ff0000">500.000 lượng</font></td><td>1.000.000.000 Xu</td></tr>
+</table></p>
+<hr/><p>
+{% if request_method()|lower == "post" %} 
+{% set luong = get_post('luong')|default(0) %}
+{% if luong==10000 %}
+{% set xutru=15000000 %}
+{% elseif luong==20000 %}
+{% set xutru=50000000 %}
+{% elseif luong==50000 %}
+{% set xutru=90000000 %}
+{% elseif luong==100000 %}
+{% set xutru=300000000 %}
+{% elseif luong==200000 %}
+{% set xutru=500000000 %}
+{% elseif luong==500000 %}
+{% set xutru=1000000000 %}
+{% endif %}
+{% if luong in [10000,20000,50000,100000,200000,500000] and user['xu']>=xutru %}
+{{func.add('user_'~signin,'xu',user.xu|trim-xutru)}}
+{{func.add('user_'~signin,'luong',user.luong|trim+luong)}}
+<p><font color="green">- Đổi <b>{{luong|number_format|replace({',':'.'})}} lượng</b> thành công. Hệ thống đã tự động trừ {{xutru|number_format|replace({',':'.'})}} xu vào tài khoản của bạn.</font></p>
+{% else %}
+<p><font color="red">- Số lượng cần đổi không hợp lệ hoặc số dư trong tài khoản của bạn không đủ để thực hiện giao dịch. Vui lòng kiểm tra lại!</font></p>
+{% endif %}
+{% endif %}
+{% if user['xu']>=15000000 %}
+Xin mời bạn chọn số lượng cần đổi:
+<form method="post" action="">
+{% for luong in [10000,20000,50000,100000,200000,500000] %}
+<div><input type="radio" name="luong" value="{{luong}}"/>{{luong|number_format|replace({',':'.'})}} lượng</div>
+{% endfor %}
+<br /><button type="submit">Đổi lượng</button>
+</form>
+{% else %}
+- Bạn đang có <b>{{user['xu']|number_format|replace({',':'.'})}} xu</b>. Rất tiếc, số dư trong tài khoản xu của bạn không đủ để tham gia giao dịch này! Vui lòng <a href="?act=napxu"><button>nạp thêm</button></a> hoặc cày chăm chỉ hơn để kiếm được thêm nhiều xu.
+{% endif %}
+</p>
+</div>
+{% elseif act=="eggs" %}
+{% set t = get_get('t') %}
+{% set dap = get_get('dap') %}
+{% set xu=user['xu'] %}
+{% set nick = avatar.mau_nick(signin,user['right']) %}
+{% if t == 'ketqua' %}
+{% set ketqua=random(4) %}
+{% set mayman = random(4) %}
+{% set tien = 500 %}
+{% set tientrung=tien*3 %}
+{% if dap < 0 or dap > 4 %}
+<div class="rmenu">Ui từ 0-4 thui bạn ui!<br/>&laquo; <a href="../games/?act=eggs">Quay lại</a></div>
+{% elseif xu < '200' %}
+<div class="rmenu">Bạn không đủ xu</div>
+{% else %}
+{% if dap == ketqua %}
+{% if dap == mayman %}
+<div class="list-login"><center><img src="https://i.imgur.com/Uc1p9Ud.png"><br/></center>Xin chúc mừng {{nick}} đã đập trúng trứng {{kq}} cùng trúng trứng may mắn Và  nhận được x3 tiền thắng lên {{tientrung}} xu </div><div class="list1">» <a href="../games/?act=eggs">Chơi tiếp</a></div>
+{{func.add('user_'~login,'xu',func.get('user_'~login,'xu')|trim+tientrung)}}
+{% else %}
+<div class="list-login"><center><img src="https://i.imgur.com/Uc1p9Ud.png"alt="Trứng vỡ" /></center><br/>Xin chúc mừng {{nick}} đã đập trúng trứng {{kq}} Và nhận được 500 Xu
+<br />
+» <a href="../games/?act=eggs">Chơi tiếp</a>
+</div>
+ {{func.add('user_'~login,'xu',func.get('user_'~login,'xu')|trim+tien)}}
+{% endif %}
+{% else %}
+<div class="list-login"><center><img src="https://i.imgur.com/Uc1p9Ud.png" alt="Trứng vỡ" /></center><br/> Ui trứng đúng là {{ketqua}} rất tiếc bạn đã đập trật và bị trừ 200 xu
+<br />
+» <a href="../games/?act=eggs">Chơi tiếp</a>
+</div> {{func.add('user_'~login,'xu',func.get('user_'~login,'xu')|trim-200)}}
+{% endif %}
+{% endif %}
+{% else %}
+<div class="list-login">
+•&nbsp;Số dư của tài khoản: <b>{{xu}} xu</b><br />•&nbsp;Thắng sẽ được 500, thua bị trừ 200 xu.
+<br/>•&nbsp;Trong khi đập nếu may mắn trúng trứng đặc biệt sẽ được x3.
+<br />•&nbsp;Số trứng gồm 5 trứng 0-4<br />&bull; Chọn Một  Trứng:
+<br />
+{% for i in 0..4 %}
+<a href="?act=eggs&t=ketqua&dap={{i}}"><img src="https://i.imgur.com/kUc3ugb.png" alt="Trứng {{i}}" /></a>
+{% endfor %}
+</div>
+{% endif %}
+{% elseif act=='baodanh' %}
+<div class="list-login">
+<b>Lưu ý:</b> Mỗi ngày bạn chỉ có thể nhận quà một lần!
+<br/>Giá trị phần quà như sau:
+<br/>- Thành viên thường: 200 xu
+<br/>- Thành viên <span style="color:red; font-weight:bold;">[PRO]</span>: 500 xu
+<br/>- Thành viên <span style="color:red; font-weight:bold;">[VIP]</span>: (Cấp độ <b>VIP</b>)×1500 xu{% if user['vip']>=1 and "now"|date('d.m.Y','Asia/Ho_Chi_Minh')!=user.baodanh %}. Như vậy, bạn sẽ nhận được {{(user['vip']*1500)|number_format|replace({',':'.'})}} xu{% endif %}
+<br/>- Tất cả các thành viên: 10 thẻ quay số miễn phí
+<br/>
+{% if "now"|date('d.m.Y','Asia/Ho_Chi_Minh')!=user.baodanh %}
+{% if request_method()|lower=="post" %}
+{% set sm = random(20..50) %}
+{% if user['vip']|trim>=1 %}
+{% set xu = user['vip']*1500 %}
+{% elseif user['pro']|trim==1 %}
+{% set xu = '500' %}
+{% else %}
+{% set xu = '200' %}
+{% endif %}
+<p>
+Chúc mừng bạn đã nhận được <b>{{xu|number_format|replace({',':'.'})}}</b> xu, <b>10</b> thẻ quay số miễn phí trong quầy của chụy {{avatar.mau_nick('apple',func.get('user_apple','right'))}} tại phòng chat và {{sm}} điểm sức mạnh cho việc báo danh ngày hôm nay.
+</p>
+{{func.add('user_'~signin,'baodanh',"now"|date('d.m.Y','Asia/Ho_Chi_Minh'))}}
+{{func.add('user_'~signin,'xu',user.xu|trim+xu|trim)}}
+{{func.add('user_'~signin,'quayso',user.quayso|trim+10)}}
+{{func.add('user_'~signin,'sm',user.sm|trim+sm|trim)}}
+{% else %}
+<form method="post" action="">
+<input type="submit" name="submit" value=" Nhận quà ">
+{% endif %}
+{% else %}
+<b>Bạn đã nhận quà cho việc báo danh ngày hôm nay. Vui lòng quay lại vào ngày mai!</b>
+{% endif %}
+</div>
+{% elseif act == 'vip' %}
+<div class="list-login">
+{% set vip=get_post('vip')|trim %}
+<center><b><font color="darkviolet">Chào mừng bạn đến với VIP Team</font></b></center>
+<br/>
+<p>Để khẳng định danh vọng, thứ hạng của bạn trên diễn đàn hãy mua danh hiệu VIP. </p>
+<p>Khi có được danh hiệu <b><font color="red">[VIP]</font></b> bạn sẽ nhận được rất nhiều ưu đãi và quyền lợi khi "Hành tẩu giang hồ"... </p>
+<p>Khi mua xong bạn sẽ nhận được danh hiệu <b><font color="red">[VIP]</font></b> cấp 1, có thể dùng tiền để nâng lên cấp 2 để hưởng nhiều ưu đãi mới.</p>
+<p>Đừng nghĩ tại sao nâng <b><font color="red">[VIP]</font></b> lại nhiều xu như vậy, vì nhiều xu mới gọi là <b><font color="red">[VIP]</font></b>.</p>
+<p><b><big>Bảng giá nâng cấp:</big></b><br/>- <b>VIP 1 - 9</b> được tính theo cấp số cộng có công sai bằng giá ban đầu, với <b>VIP 1</b> có giá là 150.000.000 xu và tương ứng với <b>VIP 2</b> sẽ có giá là 300.000.000 xu.
+<br/>- <b>VIP 10 - 14</b>: 2.000.000.000 xu (2 tỉ xu) / <b>+1 VIP</b>.
+<br/>- <b>VIP 15 - 20</b>: 1.000.000.000.000 xu (1 nghìn tỉ xu) / <b>+1 VIP</b>.
+<br/><font color="red">**</font><font color="#fff"> Khi hạ VIP, bạn sẽ được hoàn lại 200.000.000 xu / <b>1 lần hạ</b>.</font>
+<div></div>
+<hr/>
+<div></div>
+<p>{% if user['vip']<1 %}Bạn chưa là thành viên <b><font color="red">[VIP]</font></b>{% else %}Hiện bạn đang là thành viên <b><font color="red">[VIP {{user['vip']}}]</font></b>{% endif %}.{% if (user['vip']+1)<20 %} Xin mời chọn hành động ở dưới...{% endif %}
+{% if request_method()|lower == "post" %} 
+{% if vip %}
+<p>
+{% if user['vip']|default(0)>=0 and user['vip']|default(0)<9 and user['xu']>=((user['vip']|default(0)+1)*150000000) %}
+{{func.add('user_'~login,'vip',user['vip']|default(0)+1)}}
+{{func.add('user_'~login,'xu',user['xu']|trim-((user['vip']|default(0)+1)*150000000))}}
+<p>Chúc mừng bạn đã nâng cấp lên <b>VIP {{user['vip']|default(0)+1}}</b> thành công. Hệ thống đã tự động trừ <b>{{((user['vip']|default(0)+1)*150000000)|number_format|replace({',':'.'})}}</b> xu vào tài khoản của bạn. Chúc bạn online vui vẻ!
+{% elseif user['vip']>=9 and user['vip']<14 and user['xu']>=2000000000 %}
+{{func.add('user_'~login,'vip',user['vip']|default(0)+1)}}
+{{func.add('user_'~login,'xu',user['xu']|trim-2000000000)}}
+<p>Chúc mừng bạn đã nâng cấp lên <b>VIP {{user['vip']|default(0)+1}}</b> thành công. Hệ thống đã tự động trừ <b>2.000.000.000</b> xu vào tài khoản của bạn. Chúc bạn online vui vẻ!
+{% elseif user['vip']>=14 and user['vip']<20 and user['xu']>=1000000000000 %}
+{{func.add('user_'~login,'vip',user['vip']|default(0)+1)}}
+{{func.add('user_'~login,'xu',user['xu']|trim-1000000000000)}}
+<p>Chúc mừng bạn đã nâng cấp lên <b>VIP {{user['vip']|default(0)+1}}</b> thành công. Hệ thống đã tự động trừ <b>1.000.000.000.000</b> xu vào tài khoản của bạn. Chúc bạn online vui vẻ!
+{% else %}
+{% if (user['vip']+1)<20 %}
+- Số dư trong tài khoản xu của bạn không đủ để thực hiện giao dịch này! Vui lòng <a href="?act=napxu"><button>nạp thêm</button></a> hoặc cày chăm chỉ hơn để kiếm được thêm nhiều xu.
+{% else %}
+- <b>VIP</b> của bạn đã đạt cấp độ tối đa!
+{% endif %}
+{% endif %}
+</p>
+{% endif %}
+{% endif %}
+{% if (user['vip']+1)<20 %}
+<form method="post" action="">
+<p><input type="radio" name="vip" value="{{user['vip']|default(0)+1}}" checked="checked"/> {#<img class="vip{{user['vip']|default(0)+1}}" src="http://ourmemories.gq/wap4/mblogbb/user/uservip_level{{user['vip']|default(0)+1}}.png"> #}<b><font color="red">VIP {{user['vip']|default(0)+1}}</font></b><br /><button type="submit">Nâng cấp VIP</button></p>
+</form>
+{% else %}
+<p>- <b>VIP</b> của bạn đã đạt cấp độ tối đa!</p>
+{% endif %}
+</div>
+{% elseif act == 'pro' %}
+<div class="list-login">
+ {% set pro=get_post('pro')|trim %}
+ {% if request_method()|lower == "post" %} 
+{% if pro %}
+{% if user['xu'] >= '1000000' and user['pro']!='1'%}
+<div class="rmenu">Mua PRO thành công <a href="../games/?act=pro">(quay lại)</a></div>
+{{func.add('user_'~login,'pro',1) }}
+{{func.add('user_'~login,'xu',user['xu']|trim-1000000)}}
+{{func.add('event_'~id_event,'time',"now"|date('U'))}}
+{{func.add('event_'~id_event,'comment','[b][red][PRO][/red][/b] @'~signin~' vừa gia nhập [b]PRO Team[/b] ! @'~signin~' hãy cố phát huy để đạt được [b][red]VIP[/red][/b] nhé :))')}} 
+{{func.up('event',id_event,'up') }}
+{% elseif user['pro']=='1' %}
+<p> Bạn hiện tại đang là thành viên <b><font color="red">[PRO]</font></b> của diễn đàn!</p>
+{% else %}
+<div class="rmenu">Bạn không đủ tiền để mua PRO <a href="../games/?act=pro">(quay lại)</a></div>
+{% endif %}
+{% endif %}
+{% endif %}
+<p>
+<center><b><font color="darkviolet">Chào mừng bạn đến với PRO Team</font></b></center>
+<br/><br/>
+Để khẳng định danh vọng, thứ hạng của bạn trên diễn đàn hãy mua danh hiệu PRO. <br/>
+{% if mpro == '' %}
+Khi có được danh hiệu <b><font color="red">[PRO]</font></b>, bạn sẽ mở được nhiều chức năng cực pro cho riêng mình!<br/>
+{% endif %}
+Giá danh hiệu <b><font color="red">[PRO]</font></b> hiện tại rất ưu đãi, chỉ với 1.000.000 xu! Còn chờ gì nữa, mại zo mại zo nào <img src="https://moleys.github.io/assets/images/qoobee2.png">
+</p>
+{% if user['xu'] >= '1000000' and user['pro']!='1' %}
+  <form method="post" action="">
+<p>
+<input type="radio" name="pro" value="pro" /> <img src="/images/pro.png"> <b><font color="red">PRO</font></b><br />
+<button>Mua PRO</button>
+</p>
+</form>
+{% elseif user['pro']==1 %}
+<p> Bạn hiện tại đang là thành viên <b><font color="red">[PRO]</font></b> của diễn đàn!</p>
+{% else %}
+<p>
+<b>Điều kiện để mua PRO:</b><br/>
+- Tiền: <b>{{user['xu']}}/<font color="red">1000000</font></b> xu ({% if user['xu'] < '1000000' %}Chưa đạt{% else %}Đã đạt{% endif %}) <br/><br/>
+Bạn chưa đạt đủ điều kiện để mua danh hiệu <b><font color="red">[PRO]</font></b><br/>
+<b><font color="orange">Hãy quay lại sau nhé!</font></b>
+</p>
+{% endif %}
+</div>
+{% else %}
+<div class="list-login menu-topic list-item">
+» <a href="../user/{{signin}}.html">Tường nhà của tôi</a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../games/?act=baodanh">Báo danh hằng ngày</a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../farm">Nông trại vui vẻ</a> 
+</div>
+{#<div class="list-login menu-topic list-item">
+» <a href="../avatar">Cửa hàng Avatar</a> <font color="red">(beta)</font>
+</div>#}
+<div class="list-login menu-topic list-item">
+» <a href="../games/?act=vip">Cửa hàng danh hiệu <b style="color:red">[VIP]</b></a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../games/?act=pro">Mua danh hiệu <b style="color:red">[PRO]</b></a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../games/?act=eggs">Đập trứng may mắn</a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../xc">Xếp chữ online <font color="red">(beta)</font></a>
+</div>
+<div class="list-login menu-topic list-item">
+» <a href="../games/?act=napluong">Đổi xu ra lượng</a> / <a href="../games/?act=napxu">Nạp xu</a>
+</div>
+{#<div class="list-login menu-topic list-item">
+» <a href="../chest">Rương đồ cá nhân</a>
+</div>#}
+<div class="phdr" id="t"><i class="fa fa-wrench" aria-hidden="true"></i> Công cụ tiện ích</div>
+{% if user['right']>='7' or library[signin]=='yes' %}<div class="menu">» <a href="/manager{% if library[signin]=='yes' %}/post{% endif %}" style="text-decoration:none;font-weight:700;letter-spacing:1px">{% if library[signin]=='yes' %}Viết bài blog{% else %}Quản lý blog{% endif %}</a></div>{% endif %}
+<div class="menu">» <a href="/tools/s-shot.php">Chụp ảnh màn hình wap/web</a></div>
+<div class="menu">» <a href="/tools/teamobi">Lấy ảnh nhân vật game Teamobi</a></div>
+<div class="menu">» <a href="/tools/calculator/equation.php">Giải phương trình bậc 2 một ẩn</a></div>
+<div class="menu">» <a href="/tools/calculator/factorial.php">Hoán vị (n giai thừa)</a> / <a href="/tools/calculator/nPr-nCr.php">Chỉnh hợp - Tổ hợp</a></div>
+<div class="menu">» <a href="/up-img">Upload Ảnh</a></div>
+{% endif %}
+</div>
+<div id="right">
+<div class="phdr"><i class="fa fa-bar-chart" aria-hidden="true"></i> <b>Hoạt động gần đây</b></div>
+{% include 'recent-activities' %}
+</div>
+<div style="clear:both"></div>
+{{block('end')}}
+{% else %}
+{% include 'community' %}
+{% endif %}

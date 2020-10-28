@@ -1,0 +1,52 @@
+{% from 'function.twig' import time,slug,description %}
+{% from 'func.twig' import mi_get,get,html_decode %}
+{% import '_functions' as func %}
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set idfirst = mi_get('show_blog')|split(' @ ')|reverse[0]|trim %}
+{% set per = data|length-1 %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+[
+{
+      "title"    : "Không tìm bài viết chứa từ khóa này",
+      "url"      : ""
+    }
+]
+{% else %}
+[
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set name = get('blog_'~i,'title') %}
+{% set id = get('blog_'~i,'id')|trim %}
+{% set category = get('blog_'~i,'category') %}
+{% set slug = get('blog_'~i,'slug') %}
+{% set cat = get('category_'~category,'ten') %}
+{% set catid = get('category_'~category,'id') %}
+{% set catslug = get('category_'~category,'slug') %}
+{% set time = get('blog_'~i,'time')|trim %}
+{% set view = get('blog_'~i,'view')|trim %}
+{% set content = get('blog_'~i,'content','raw') %}
+{% set mota = description(content) %}
+{% set thumb = get('blog_'~i,'thumb')|trim %}
+{% set cmt = get('blog_'~i,'comment_num')|trim %}
+{% set pre = name|split('[')[1]|split(']')[0] %}
+{% if pre!='' %}{% set title = name|replace({(pre):'','[':'',']':''}) %}{% else %}{% set title = name %}{% endif %}
+    {
+      "title"    : "{{title}}",
+      "url"      : "{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/{{id}}-{{slug}}"
+    }{% if loop.last==false %} ,{% endif %}
+{% endfor %}
+{% endif %}
+]

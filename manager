@@ -1,0 +1,388 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% from 'function.twig' import get,add,mi_add,slug,id,mi_get,mi_up,time,mi_del %}
+{% from 'func.twig' import mi_get,mi_up,mi_del,k_del %}
+{% set url=get_uri_segments() %}
+{% set login = func.signin()|trim %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set library = get_data('library')[0].data|json_decode %}
+{% if login %}
+{{block('head')}}
+{% set url = get_uri_segments() %}
+{% if url[0] == 'manager' %}
+{% if user['right']>='7' and url[1]!='' %}<div class="social">Quản trị <a href="/manager">(quay lại)</a></div>{% endif %}
+{% if url[1] == 'created-category' and user['right']>='7' %}
+<div class="phdr"><b><i class="fa fa-bars"></i> Tạo thư mục</b> (Tối đa 50 kí tự)</div>
+{% set text,content,key = get_post('text')|striptags|slice(0,200)|trim,get_post('content'),get_post('key') %}
+{% set slug=slug(text)|trim %}
+{% if text and content and key %}
+{% if text|length > 50 or text|length < 1 %}
+<div class="rmenu">Lỗi rồi</div>
+{% else %}
+{% set id = id('category') %}
+{% set data = {"ten":text,"slug":slug,"id":(id|trim),"content":content,"key":key} %}
+{{mi_up('list_category',id)}}
+{% set go = mi_add('category_'~id,data) %}
+<div class="gmenu">Thư mục được tạo thành công.</a></div>
+{% endif %}
+{% endif %}
+<div class="menu"><form action="" method="post"><input type="text" name="text" value="" maxlength="50"><br/>Mô tả : <textarea name="content"></textarea>Từ khoá: 
+<textarea name="key"></textarea><button type="submit" class="btn btn-primary btn-block">Tạo</button></form></div>
+<div class="phdr"><b><i class="fa fa-bars"></i> Danh sách chuyên mục</b></div>
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+{% if data|length > 3 %}
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% if loop.last==false %}
+<div class="list-login"><i class="fa fa-cube" aria-hidden="true"></i> {{cmm}}</div>
+{% endif %}
+{% endfor %}
+{% else %}
+<div class="rmenu">Chưa có chuyên mục nào</div>
+{% endif %}
+{% elseif url[1]=='post' and library[login]=='yes' or url[1]=='post' and user['right']>='7' %}
+<div class="phdr border_red"><b><i class="fa fa-pencil" aria-hidden="true"></i> Đăng bài viết</b></div>
+{% set data1 = mi_get('show_blog')|split(' @ ')|last %}
+{% set slug1 = get('blog_'~data1,'slug') %}
+{% set ten = get_post('ten')|striptags|slice(0,300)|trim %}
+{% set idcm = get_post('category')|trim %}
+{% set content = get_post('content') %}
+{% set thumb = get_post('thumb') %}
+{% set category = mi_get('list_category')|split(' @ ') %}
+{% set html = get_get('editor') %}
+{% set comment = get_post('comment') %}
+{% if ten and content and idcm %}
+{% set slug=slug(ten)|default('post')|trim %}
+{% set id = get('ID','blog')|trim+1 %}
+
+{% set data={'title':ten|slice(0,300),'slug':slug,'content':content,'time':'now'|date('U', 'Asia/Ho_Chi_Minh'),'category':idcm,'id':id,'thumb':thumb|default(''),'view':1,'author':login|default('apple'),'comment':comment|default(0)} %}
+{% if slug1 == slug %}
+Bài viết bị trùng
+{% else %}
+{% if mi_add('blog_'~id,(data)) %}
+{{mi_up('show_blog',id)}}
+
+{{mi_up('show_category_'~idcm,id)}}
+{{mi_add('ID',{"blog":(id)})}}
+<div class="gmenu">Đăng bài viết thành công</div>
+<script>window.location.href='/library/{{id}}-{{slug}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{id}}-{{slug}}">
+{% endif %}
+{% endif %}
+{% endif %}
+
+
+<style>.button{background-color:#e7e7e7;border:none;color:#000;padding:15px 32px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer}</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/colors/trumbowyg.colors.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+
+<form action="" method="post">
+<div class="list-login"><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề:</b> <i>(có thể sử dụng tiền tố: [thể loại] tiêu đề bài viết; <u>ví dụ:</u> [Truyện kinh dị] Xe đạp của Tròm bị xì hơi)</i> <input type="text" name="ten" value="" maxlength="300" style="height:100%; width:100%"></div>
+<div class="list-login"><b><i class="fa fa-bars"></i> Chuyên mục:</b> 
+    <select name="category">  
+    	{% for i in category|reverse %}{% if loop.last==false %}
+            <option value="{{get('category_'~i,'id')}}">{{get('category_'~i,'ten')}}</option>{% endif %}
+	{% endfor %}
+    </select>
+</div>
+<div class="list-login"><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode, <a href="/smile">smile</a>)</i><div>Đối với truyện, các bạn có thể thống kê 1 số yếu tố như sau: tác giả, thể loại, tình trạng<br/><b>Tác giả:</b> [author]tên tác giả[/author]<br/><b>Thể loại:</b> [search]danh sách thể loại[/search] <i>(Các thể loại truyện ngăn cách nhau bởi dấu phẩy. Ví dụ: Tự truyện, Truyện kinh dị, ATSM)</i><br/><b>Giới thiệu:</b> [desc]mô tả ngắn[/desc]</div> <textarea id="trumbowyg" name="content" rows="25"></textarea></div>
+<div class="list-login"><input type="checkbox" name="comment" value="1" checked> Cho phép bình luận<br/></div>
+<div class="list-login"><center><button type="submit" class="button">Đăng bài</button></form></center></div>
+<script>
+$('#trumbowyg').trumbowyg({
+{#autogrowOnEnter: true,#}
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['undo', 'redo'],
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['foreColor', 'backColor'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+        ['viewHTML']
+
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+{% elseif url[1] == 'list' and user['right']>='7' %}
+<div class="phdr border_red"><b><i class="fa fa-book" aria-hidden="true"></i> Danh sách bài viết</b></div>
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set per = '10' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<div class="list-login">Chưa có bài viết nào</div>
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set entries='' %}{% for entry in get_data('blog_'~i) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set name = post.title %}
+{% set id = post['id']|trim %}
+{% set category = post['category'] %}
+{% set slug = post['slug'] %}
+{% set cat = get('category_'~category,'ten') %}
+{% set time = post['time'] %}
+{% set view = post['view'] %}
+{% set cmt = post['comment_num'] %}
+<div class="list-login">
+<table cellpadding="0" cellspacing="0" width="100%"><tr><td>
+[{{cat}}]</span>
+ <a href="/library/{{id}}-{{slug}}/"> {{name}}</a>
+<div class="sub">
+<small><i class="fa fa-eye" aria-hidden="true"></i> {{view}} / <i class="fa fa-clock-o"></i> {{time(time)}}</small>
+</div>
+</td><td align="right"><b><a href="/manager/edit/{{id}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i></a> / <a href="/manager/delete/{{id}}"><i class="fa fa-trash-o" aria-hidden="true"></i></a></b></td></tr>
+</table>
+</div>
+{% endfor %}
+{% endif %}
+{{func.paging('manager/list?p',p,page_max)}}
+{% elseif url[1] == 'edit' %}
+<div class="phdr border_red"><b><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa bài viết</b></div>
+{% set entries='' %}{% for entry in get_data('blog_'~url[2]) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% if user['right']>='7' or func.rwurl(post['author'])==login %}
+{% set tencu = post['title'] %}
+{% set slugcu = post['slug'] %}
+{% set ndcu = post['content'] %}
+{% set idcu = post['id'] %}
+{% set cmcu = post['category'] %}
+{% set timecu = post['time'] %}
+{% set commentcu = post['comment'] %}
+{% set htmlcu = post['html'] %}
+{% if post %}
+{% set ten = get_post('ten')|striptags|slice(0,300)|trim %}
+{% set idcm = get_post('category')|trim %}
+
+{% set content = get_post('content') %}
+{% set category = mi_get('list_category')|split(' @ ') %}
+
+{% set comment = get_post('comment') %}
+{% if ten and content and idcm %}
+{% set slug=slug(ten)|default('post')|trim %}
+{% set id = idcu %}
+
+{% set data={'title':ten|slice(0,300),'slug':slug,'content':content,'time':timecu,'category':idcm,'id':id,'thumb':'','author':login|default('admin'),'comment':comment|default(0)} %}
+{% set go = mi_add('blog_'~id,(data)) %}
+
+{% if cmcu != idcm %}
+{{mi_del('show_blog',id)}}
+
+{{mi_del('show_category_'~cmcu,id)}}
+{{mi_up('show_blog',id)}}
+
+{{mi_up('show_category_'~idcm,id)}}
+{% endif %}
+<div class="gmenu">Chỉnh sửa bài viết thành công</div>
+<script>window.location.href='/library/{{url[2]}}-{{slug}}'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/library/{{url[2]}}-{{slug}}">
+{% endif %}
+<style>.button{background-color:#e7e7e7;border:none;color:#000;padding:15px 32px;text-align:center;text-decoration:none;display:inline-block;font-size:16px;margin:4px 2px;cursor:pointer}</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/trumbowyg.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/pasteembed/trumbowyg.pasteembed.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/cleanpaste/trumbowyg.cleanpaste.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/upload/trumbowyg.upload.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/plugins/colors/trumbowyg.colors.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Trumbowyg/2.20.0/ui/trumbowyg.min.css" />
+
+<form action="" method="post">
+<div class="list-login"><b><i class="fa fa-gg" aria-hidden="true"></i> Tiêu đề:</b> <i>(có thể sử dụng tiền tố: [thể loại] tiêu đề bài viết; <u>ví dụ:</u> [Truyện kinh dị] Xe đạp của Tròm bị xì hơi)</i> <input type="text" name="ten" value="{{tencu}}" maxlength="300" style="height:100%; width:100%"></div>
+
+<div class="list-login"><b><i class="fa fa-bars"></i> Chuyên mục:</b> 
+    <select name="category">  
+    	{% for i in category %}{% if loop.first==false %}
+            <option value="{{get('category_'~i,'id')}}" {{get('category_'~i,'id') == cmcu ? 'selected':null}}>{{get('category_'~i,'ten')}}</option>{% endif %}
+    	{% endfor %}
+    </select>
+</div>
+<div class="list-login"><b><i class="fa fa-newspaper-o" aria-hidden="true"></i> Nội dung:</b> <i>(có thể sử dụng bbcode, <a href="/smile">smile</a>)</i><div>Đối với truyện, các bạn có thể thống kê 1 số yếu tố như sau: tác giả, thể loại, tình trạng<br/><b>Tác giả:</b> [author]tên tác giả[/author]<br/><b>Thể loại:</b> [search]danh sách thể loại[/search] <i>(Các thể loại truyện ngăn cách nhau bởi dấu phẩy. Ví dụ: Tự truyện, Truyện kinh dị, ATSM)</i><br/><b>Giới thiệu:</b> [desc]mô tả ngắn[/desc]</div> <textarea id="trumbowyg" name="content" rows="25">{{ndcu}}</textarea></div>
+<div class="list-login"><input type="checkbox" name="comment" value="1" {% if commentcu == '1' %}checked{% endif %}> Cho phép bình luận</div>
+<div class="list-login"><center><button type="submit" class="button">Chỉnh sửa</button></form></center></div>
+
+
+<script>
+$('#trumbowyg').trumbowyg({
+{#autogrowOnEnter: true,#}
+    btnsDef: {
+        // Create a new dropdown
+        image: {
+            dropdown: ['insertImage', 'upload'],
+            ico: 'insertImage'
+        }
+    },
+    btns: [
+        ['undo', 'redo'],
+        ['formatting'],
+        ['strong', 'em', 'del'],
+        ['foreColor', 'backColor'],
+        ['link'],
+        ['image'],
+        ['justifyLeft', 'justifyCenter', 'justifyRight', 'justifyFull'],
+        ['viewHTML']
+
+
+    ],
+    plugins: {
+        // Add imagur parameters to upload plugin for demo purposes
+        upload: {
+            serverPath: 'https://api.imgur.com/3/image',
+            fileFieldName: 'image',
+            headers: {
+                'Authorization': 'Client-ID 21ca8b31c6adc09'
+            },
+            urlPropertyName: 'data.link'
+        }
+    }
+});
+       
+</script>
+
+{% else %}
+<div class="rmenu">Lỗi, bài viết không tồn tại</div>
+{% endif %}
+{% else %}
+<div class="phdr border_red">Lỗi truy cập!</div>
+<div class="list-login">Lạc đường rồi bạn ơi :))</div>
+{% endif %}
+{% elseif url[1] == 'delete' and user['right']>='7' %}
+<div class="phdr border_red"><i class="fa fa-trash-o" aria-hidden="true"></i> Xoá bài viết</div>
+{% set entries='' %}{% for entry in get_data('blog_'~url[2]) %}{% set entries=entries~entry.data %}{% endfor %}
+{% set post=entries|json_decode %}
+{% set tencu = post['title'] %}
+{% set slugcu = post['slug'] %}
+{% set ndcu = post['content'] %}
+{% set id = post['id'] %}
+{% set cmcu = post['category'] %}
+{% if post %}
+{% set delete = get_post('delete') %}
+{% if delete == '1' %}
+{{mi_del('show_blog',id)}}
+{{mi_del('show_category_'~cmcu,id)}}
+{{k_del('blog_'~id)}}
+{{k_del('comment_'~id)}}
+{{delete_data_by_id('blog_'~id~'_chap',get_data('blog_'~id~'_chap')|last.id)}}
+{% for chap in 1..(post['chap']) %}{{delete_data_by_id('blog_'~id~'_chap_'~chap,get_data('blog_'~id~'_chap_'~chap)|last.id)}}{% endfor %}
+<div class="gmenu">Xoá thành công</div>
+<script>window.location.href='/'</script>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/">
+{% endif %}
+<div class="list-login">Bạn có muốn xoá bài viết: <a href="/library/{{id}}">{{tencu}}</a><br/>
+<form action="" method="post"><input type="hidden" name="delete" value="1"><button type="submit" class="btn btn-primary btn-block">Xóa nhận</button></form></div>
+{% else %}
+<div class="rmenu">Bài viết không tồn tại</div>
+{% endif %}
+{% elseif url[1] == 'category-sort' and user['right']>='7' %}
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+<div class="phdr border_red"><b><i class="fa fa-bars"></i> Sắp xếp các chuyên mục</b></div>
+{% if data|length > 3 %}
+{% set act=get_get('id') %}
+{% set actt = get_get('idc') %}
+{% set idc = get('category_'~act,'idc') %}
+{% if act %}
+{% if get('category_'~act,'ten') == '' %}
+<div class="gmenu">Chuyên mục không tồn tại</div>
+{% else %}
+{{mi_up('list_category_'~idc,act)}}
+<div class="gmenu">Thành công</div>
+{% endif %}
+{% endif %}
+{% if actt %}
+{% if get('category_'~actt,'ten') == '' %}
+<div class="gmenu">Chuyên mục không tồn tại</div>
+{% else %}
+{{mi_up('list_category',actt)}}
+<div class="gmenu">Thành công</div>
+<script>window.location.href='/manager/category-sort'</script></div>
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/manager/category-sort">
+{% endif %}
+{% endif %}
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set cmc = mi_get('list_category_'~idcmm) %}
+{% if loop.last==false %}
+<div class="list-login"><a href="/manager/category-sort?idc={{idcmm}}"><i class="fa fa-chevron-circle-up" aria-hidden="true"></i></a> [ID: {{idcmm}}] {{cmm}}  </div>
+{% endif %}
+{% endfor %}
+{% else %}
+<div class="list-login">Chưa có chuyên mục nào</div>
+{% endif %}
+{% elseif user['right']>='7' and get_get('right')!='' and get_get('right')!=login %}
+<div class="phdr"><b><i class="fa fa-tachometer" aria-hidden="true"></i> Quyền viết bài blog</b></div>
+{% if get_data_count('user_'~get_get('right'))=='0' %} 
+<div class="rmenu">Thành viên này không tồn tại!</div>
+{% else %}
+<div class="menu">{{avatar.mau_nick(get_get('right'),func.get('user_'~get_get('right'),'right'))}} {% if library[get_get('right')]=='yes' %}đang được phép{% else %}không được phép{% endif %} đăng bài. Bạn có muốn thay đổi điều này không?</div>
+{% if request_method()|lower == "post" %}{{func.add('library',get_get('right'),get_post('right'))}}<div class="rmenu" style="color:green">Thay đổi thành công</div><script language="javascript" type="text/javascript"> 
+window.location.href="?right={{get_get('right')}}"; 
+</script> 
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=?right={{get_get('right')}}">{% endif %}
+<div class="menu"><form method="post">{% for right in ['yes','no'] %}<div><input type="radio" name="right" value="{{right}}" {% if right==library[get_get('right')]=='yes' %}checked="checked" {% endif %}/> {% if right=='yes' %}Được phép{% else %}Không được đăng bài{% endif %}</div>{% endfor %}<div><input class="btn btn-primary" type="submit" name="submit" value="Đồng ý thay đổi"></div></form></div>
+{% endif %}
+{% else %}
+{% if user['right']>='7' %}
+<div class="phdr border_red"><b><i class="fa fa-tachometer" aria-hidden="true"></i> Quản trị</b></div>
+<div class="list-login">
+   <a href="/manager/post"><i class="fa fa-cog" aria-hidden="true"></i> Viết bài mới</a>
+</div>
+<div class="list-login">
+   <a href="/manager/created-category"><i class="fa fa-cog" aria-hidden="true"></i> Tạo thư mục</a>
+</div>
+<div class="list-login">
+   <a href="/manager/list"><i class="fa fa-cog" aria-hidden="true"></i> Danh sách bài viết</a>
+</div>
+{# <div class="list-login">
+   <a href="/manager/category-sort"><i class="fa fa-cog" aria-hidden="true"></i> Sắp xếp chuyên mục</a>
+</div> #}
+{% else %}
+<div class="phdr">Lỗi truy cập!</div>
+<div class="list-login">Lạc đường rồi bạn ơi :))</div>
+{% endif %}
+{% endif %}
+{% endif %}
+{{block('end')}}
+{% else %}
+{% include '_404' %}
+{% endif %}

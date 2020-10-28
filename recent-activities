@@ -1,0 +1,37 @@
+{% import '_functions' as func %}
+{% if login %}
+{% if get_data_count('event')==0 %}
+{% for i in 1..20 %}
+{% set save=save_data('event_'~i,{"name" :"apple","time":'now'|date('U'),"comment":"khởi tạo entry thành công!"}|json_encode) %}
+{% endfor %}
+{% set save=save_data('event',' 20 @  19 @  18 @  17 @  16 @  15 @  14 @  13 @  12 @  11 @  10 @  9 @  8 @  7 @  6 @  5 @  4 @  3 @  2 @  1 @ ') %}
+{% endif %}
+{% set login = func.signin|trim %}
+{% set data= func.get('event')|trim|split('@') %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//5 %}
+{% if total//5 != total/5 %}
+{% set page_max=total//5+1 %}
+{% endif %}
+ {% set url=get_uri_segments() %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*5-5 %}
+{% if total == 0 %}
+<div class="menuItem" style="background-color:#e9ccd2">Chưa có hoạt động nào diễn ra gần đây</div>
+{% endif %}
+{% for id in data|slice(0,total)|slice(st,5) %}
+{% set entry = get_data('event_'~id|trim)[0].data|json_decode %}
+{% set user='user_'~entry.name %}
+{% set cmt = entry.comment %}
+{% set time = entry.time %}
+ <div class="list-login">{{func.bbcode(cmt|raw)}} <font color="gray" style="font-size:small">({{func.ago(time)}})</font>
+</div>
+{% endfor %}
+{#{{func.paging(url|join('/')~'?p',p,page_max)}}#}
+{% endif %}

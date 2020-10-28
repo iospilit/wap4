@@ -1,0 +1,159 @@
+{% macro mi_save_data(key,data) %}
+  {% set limit=30000 %}
+  {% set char=data|json_encode %}
+  {% set n=(char|length/limit)|round(0,'ceil') %}
+  {% for i in 1..n %}{{i}}
+      {{save_data(key,char|slice(i*limit-limit,limit)) }}
+  {% endfor %}
+{% endmacro %}
+{% macro mi_add(k,arr) %} 
+  {% set li,do,gd=30000,null,get_data(k,100,1) %}
+  {% for e in gd %}{% set do=do~e.data %}{% endfor %}
+  {% set do,arr=do|default(([])|json_encode),arr|default({})|json_encode %}
+  {% set dn=do|json_decode|merge(arr|json_decode)|json_encode %}
+  {% set mdo,mdn=(do|length/li)|round(0,'ceil'),(dn|length/li)|round(0,'ceil') %}
+  {% if not gd %}
+     {% for x in 1..mdn %}{{save_data(k,dn|slice((loop.index-1)*li,li))}}{% endfor %}
+  {% elseif mdn>mdo %}
+     {% for x in gd %}{{update_data_by_id(k,x.id,dn|slice((loop.index-1)*li,li))}}{% endfor %}{% for x in gd|length..mdn-1 %}{{save_data(k,dn|slice(x*li,li))}}{% endfor %}
+  {% elseif mdn<mdo %}
+     {% for x in gd %}{{ loop.index<=mdn ? update_data_by_id(k,x.id,dn|slice((loop.index-1)*li,li)) : delete_data_by_id(k,x.id) }}{% endfor %}               
+  {% else %}
+     {% for x in gd %}{{update_data_by_id(k,x.id,dn|slice((loop.index-1)*li,li))}}{% endfor %}          
+  {% endif %}
+{% endmacro %}
+          
+{% macro add(key,k,v) %}
+{% set id=get_data(key)|last.id %}
+{% if id %}
+{% set data=get_data(key)|last.data|json_decode|merge({(k):(v)})|json_encode %}
+{{ update_data_by_id(key,id,data) }}
+{% else %}
+{% set data=({})|merge({(k):(v)}) %}
+{{save_data(key,data|json_encode)}}
+{% endif %}
+{% endmacro %}
+
+{% macro get(key,v) %}{% spaceless %} 
+{% if v %}
+{{ get_data(key)|last.data|json_decode[v] }}
+{% else %}
+{{ get_data(key)|last.data|raw }}{% endif %}
+{% endspaceless %}{% endmacro %}
+
+{% macro id(v) %}{% spaceless %} 
+{% if not v %}{% set v='id' %}{% endif %}
+{% set id=get_data('ID')|last.id %}
+{% if id %}
+{% set idn=_self.get('ID',v)|trim+1 %}
+{% set go=_self.add('ID',v,idn) %}
+{{idn}}
+{% else %}
+{% set data={"id":1,(v):1} %}
+{% set go=save_data('ID',data|json_encode) %}
+1
+{% endif %}
+{% endspaceless %}{% endmacro %}
+{% macro del(key,name) %}
+{% set data=get_data(key)|last.data|json_decode %}
+{% set i=0 %}{% for k,v in data %}{% if name==k %}{% set i=loop.index %}{% endif %}{% endfor %}
+{% set data=data|default({})|slice(0,i-1)|merge(data|slice(i,data|length)) %}
+{{(i>0?update_data_by_id(key,get_data(key)|last.id,data|json_encode):null) ~ i}}
+{% endmacro %}
+{% macro up(k,v) %}{% spaceless %} 
+{% set id=get_data(k)|last.id %}
+{% if id %}
+{% set idn=_self.get(k,v)|trim+1 %}
+{% set go=_self.add(k,v,idn) %}
+{{idn}}
+{% else %}
+{% set data={(v):1} %}
+{% set go=save_data(k,data|json_encode) %}
+1
+{% endif %}
+{% endspaceless %}{% endmacro %}
+
+{% macro top(key) %}
+{% set id=get_data(key)|last.id %}
+{% set content=get_data_by_id(key,id).data|json_decode %}
+{% set data={} %}
+{% for k,v in get_data_by_id(key,id).data|json_decode|sort|reverse|slice(0,10) %}{% set i=i+1 %}{% set data=data|merge({(k):(v)}) %}{% endfor %}
+{{data}}
+{% endmacro %}
+
+{% macro bbcode(data) %}{% spaceless %}
+{% set data=data|escape %}
+{% set tags=['b','i','s','u'] %}
+{% for i,tag in tags if '['~tag~']' in data and '[/'~tag~']' in data %}
+	{% set tt=data|split('[/'~tag~']') %}
+	{% for i,t in tt|slice(0,-1) %}
+		{% set r=t|split('['~tag~']')|last %}
+		{% set data=data|replace({('['~tag~']'~r~'[/'~tag~']'):('<'~tag~'>'~r~'</'~tag~'>')}) %}
+	{% endfor %}
+{% endfor %}
+{% set tags={
+	'[color=(*?)](*?)[/color]'	:	'<span style="color:(*?)">(*?)</span>',
+	'[url=(*?)](*?)[/url]' 		: 	'<a href="(*?)">(*?)</a>',
+	'[quote=(*?)](*?)[/quote]'	:	'<quote>(*?)</quote>'
+} %}
+{% for k,v in tags %}
+	{% set sk,sv=k|split('(*?)'),v|split('(*?)') %}
+	{% for kk,vv in data|split(sk[2]) %}
+		{% set nn=vv|split(sk[0])|last %}
+		{% set n1=nn|split(sk[1])|first %} 
+		{% set n2=nn|split(sk[1])|last %}
+		{% set data=data|replace({ (sk[0]~n1~sk[1]~n2~sk[2]):(sv[0]~n1~sv[1]~n2~sv[2]) }) %}
+	{% endfor %}
+{% endfor %}
+{% endspaceless %}{{data|raw|nl2br}}{% spaceless %}
+{% endspaceless %}{% endmacro %}
+
+{% macro hook(id) %}
+[{{block('hook_'~id)}}][{{block(hook_8)}}]
+{% endmacro %}
+
+{% macro description(content,num) %}{% spaceless %}
+{% set content=content|raw|striptags|slice(0,num)|replace({'\n':' ','&nbsp;':' ','&ldquo;':'','&rdquo;':'', '&ndash;':''})|split(' ') %}
+{% for m in content if m|length>0 %}{{m}} {% endfor %}
+{% endspaceless %}{% endmacro %}
+
+        
+{% macro slug(str) %}{% set abc='a|á|à|ả|ã|ạ|ă|ắ|ằ|ẳ|ẵ|ặ|â|ầ|ấ|ẩ|ẫ|ậ|b|c|d|đ|e|è|é|ẻ|ẽ|ẹ|ê|ề|ế|ễ|ể|ệ|f|g|h|i|ì|í|ỉ|ĩ|ị|k|l|m|n|u|ù|ú|ủ|ũ|ụ|ư|ừ|ứ|ử|ữ|ự|o|ò|ó|ỏ|õ|ọ|ô|ồ|ố|ổ|ỗ|ộ|ơ|ờ|ớ|ỡ|ở|ợ|j|t|r|p|q|v|s|x|y|z|1|2|3|4|5|6|7|8|9|0|' %}
+{% set ru=str|lower|split('') %}{% set url_vn %}{% for i in ru|keys %}{% if ru[i] in abc %}{{ru[i]}}{% else %}{% if ru[(i+1)] in abc %}-{% endif %}{% endif %}{% endfor %}{% endset %}
+{% set rwurl=url_vn|replace({'á':'a','à':'a','ả':'a','ã':'a','ạ':'a','ă':'a','ắ':'a','ằ':'a','ẳ':'a','ẵ':'a','ặ':'a','â':'a','ấ':'a','ầ':'a','ẩ':'a','ẫ':'a','ậ':'a','æ':'a','ä':'a','đ':'d','ð':'d','é':'e','è':'e','ẻ':'e','ẽ':'e','ẹ':'e','ê':'e','ế':'e','ề':'e','ể':'e','ễ':'e','ệ':'e','í':'i','ì':'i','ì':'i','ỉ':'i','ĩ':'i','ị':'i','ï':'i','î':'i','ó':'o','ò':'o','ỏ':'o','õ':'o','ọ':'o','ô':'o','ố':'o','ồ':'o','ổ':'o','ỗ':'o','ộ':'o','ơ':'o','ớ':'o','ờ':'o','ở':'o','ỡ':'o','ợ':'o','ö':'o','ø':'o','ú':'u','ù':'u','ủ':'u','ũ':'u','ụ':'u','ư':'u','ứ':'u','ừ':'u','ử':'u','ữ':'u','ự':'u','ü':'u','û':'u','ý':'y','ỳ':'y','ỷ':'y','ỵ':'y','ỹ':'y'}) %}
+{% if rwurl|slice(0,1)=='-' %}{% set rwurl=rwurl|slice(1,rwurl|length) %}{% endif %}
+{{rwurl}}{% endmacro %} 
+        
+{% macro page(page,page_max,url) %} {% if page_max>1 %}
+<div class="paging">
+  {% if page>3 %}<a href="{{url}}1">1</a>{% endif %}  
+  {% if page>4 %} <span>..</span>{% endif %}
+  {% if (page-2)>0 %}<a href="{{url~(page-2)}}">{{(page-2)}}</a>{% endif %}
+  {% if (page-1)>0 %}<a href="{{url~(page-1)}}">{{(page-1)}}</a>{% endif %}
+  {% if page_max>1 %}<a class="active">{{page}}</a>{% endif %}
+  {% if (page+1)<=page_max %}<a href="{{url~(page+1)}}">{{(page+1)}}</a>{% endif %}
+  {% if (page+2)<=page_max %}<a href="{{url~(page+2)}}">{{(page+2)}}</a>{% endif %}
+  {% if page<(page_max-3) %}<a href="#">..</a>{% endif %}
+  {% if page<(page_max-2) %}<a href="{{url~(page_max)}}">{{(page_max)}}</a>{% endif %}
+</div>{% endif %}
+{% endmacro %}  
+
+{% macro time(time) %}{% spaceless %}
+{% set ss=("now"|date("U"))-time %}
+{% if ss==0 %}
+Vừa xong
+{% elseif ss>31622400 %}
+{{(ss/31622400)|round(0,'ceil')}} năm trước
+{% elseif ss>2592000 %}
+{{(ss/2592000)|round(0,'ceil')}} tháng trước
+{% elseif ss>86400 %}
+{{(ss/86400)|round(0,'ceil')}} ngày trước
+{% elseif ss>3600 %}
+{{(ss/3600)|round(0,'ceil')}} giờ trước
+{% elseif ss>60 %}
+{{(ss/60)|round(0,'ceil')}} phút trước
+{% else %}
+{{ss}} giây trước
+{% endif %}
+
+{% endspaceless %}{% endmacro %} 

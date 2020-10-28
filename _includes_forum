@@ -1,0 +1,179 @@
+{% block head %}
+{% import '_functions' as func %}
+{% from 'function.twig' import add,mi_add,slug,time,description %}
+{% import '_avatar' as avatar %}
+{% from 'func.twig' import mi_get,mi_up,k_del,get,html_decode %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set library = get_data('library')[0].data|json_decode %}
+{% set shortcut_icon = 'https://m.cafedang.xyz/wap4/cafedang/images/cafedang-icon.png' %}
+{% set site_description = 'Tôi đang được sống. Tất cả là bắt đầu, với tất cả những gì vốn có…' %}
+{% set site_name = 'Cà Phê Đắng' %}
+{% set author = 'Valerat02' %}
+{% set ver = '1.0.0' %}
+{% set mail = func.get('new_mail_'~signin)|split('@') %}
+{% set totalmail = mail|length-1 %}
+{% if signin %}
+{% if get_data_count('library')==0 %}
+{% set save=save_data('library',{"apple":"no"}|json_encode) %}
+{% endif %}
+{% endif %}
+{% set notifi= func.get('notification_'~signin)|trim|split('@')|reverse %}{% set no=notifi|length-1 %}{% set notification=0 %}{% for i in notifi|slice(0,no)|slice(0,300) %}{% set ntf = get_data('notification_'~signin~'_'~i|trim)|last.data|json_decode %}{% if ntf['view']!='1' %}{% set notification=notification|trim+1 %}{% endif %}{% endfor %}
+{#<script language="javascript" type="text/javascript"> 
+window.location.href="/home"; 
+</script> 
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/home">#}
+<!DOCTYPE html>
+<html>
+ <head>
+ <meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<meta http-equiv="content-language" content="vi" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1.0,user-scalable=yes">
+<meta name="HandheldFriendly" content="true" />
+<meta name="MobileOptimized" content="width" />
+ <meta name="description" content="{{description|default(site_description)}}...">
+<meta content="tin tuc, cong nghe, khoa hoc, doi song, share code, johncms, lap trinh, jekyll, kien thuc lap trinh, truyen, the gioi truyen, doc truyen, sex, anh sex, java, android, ios, kinh nghiem, thu thuat, tam ly, ky nang song, ma nguon, source code" name="keywords"/>
+<meta property="og:title" content="{{title|default(site_name)}}"/>
+<meta property="og:type" content="website"/>
+ <meta property="og:site_name" content="{{site_name}}"> 
+<meta property="og:url" content="{{current_url}}{% if get_get('chap')>='1' %}?chap={{get_get('chap')}}{% endif %}"/>
+<meta property="og:image" content="{{img|default('https://i.imgur.com/QirNeqE.jpg')}}">
+<meta property="og:description" content="{{description|default(site_description)}}..."/>
+<meta name="theme-color" content="#22292F">
+<meta property="fb:app_id" content="1428695503993156" />
+ <meta name="author" content="{{author}}">
+<meta content="yes" name="apple-mobile-web-app-capable" />
+<meta name="robots" content="noodp,index,follow" />
+<meta name="googlebot" content="index,follow">
+<meta name="google" content="notranslate">
+<meta name="revisit-after" content="1 days" />
+ <meta name="format-detection" content="telephone=no">
+ <link rel="dns-prefetch" href="https://i.imgur.com">
+ <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com"> <link rel="dns-prefetch" href="https://raw.githack.com">
+ <link rel="dns-prefetch" href="https://images.weserv.nl">
+<link rel = "canonical" href = "{{current_url|split('/').0~"//"~current_url|split('/').2}}"/>
+<script src="https://rawcdn.githack.com/gijo-varghese/flying-pages/9f0be12f84bd1ced8c3e355eca54e32cd8871022/flying-pages.min.js" type="b33c10f891c91237a9ef7457-text/javascript"></script>
+<link href="https://fonts.googleapis.com/css?family=Quicksand" rel="stylesheet">
+<style>{% include '_style' %}</style>
+{% if url[0]=='registration.php' %}
+{% if get_cookie('captcha')=='' or get_cookie('captcha')==null %}
+{{set_cookie('captcha',random(1000..9999))|lower}}
+{% endif %}
+{% endif %}
+<link rel="image_src" href="{{shortcut_icon}}"/><link href="{{shortcut_icon}}" rel="shortcut icon" type="image/x-icon" /><link rel="icon" href="{{shortcut_icon}}"  type="image/png"><link rel="apple-touch-icon-precomposed" href="{{shortcut_icon}}">
+<title> {{title|default(site_name)}} </title></head>
+ <body{% if url[0]=='library' %} itemscope itemtype="http://schema.org/WebPage"{% endif %} style="color:#5f6366;-webkit-touch-callout:none;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;-o-user-select:none;user-select:none"> 
+<span id="head"></span>
+<div class="header"><h1 class="logo fix">CafeĐắng.XyZ</h1></div>
+<div style="display:table; width:100%;"><div class="navbar" id="navbar"><span style="position: relative;"><a href="/community" title="Trang chủ"><span class="item{% if url[0]=='' or url[0]=='community' %} selected{% endif %}"><i class="fa fa-home" aria-hidden="true"></i> Trang chủ</span></a>{% if signin %}<a href="/games" title="Trang cá nhân"><span class="item{% if url[0]=='user' or url[0]=='games' or url[0]=='tools' or url[0]=='manager' %} selected{% endif %}"><i class="fa fa-user"></i> Tài khoản</span></a><a href="/notification" title="Thông báo"><span class="item{% if url[0]=='notification'%} selected{% endif %}"><i class="fa fa-bell"></i> Thông báo{% if notification >= '1' %} <b>({{notification}})</b>{% endif %}</span></a><a href="/mail{% if totalmail == '1' %}/{{mail[0]}}{% endif %}" title="Tin nhắn"><span class="item{% if url[0]=='mail'%} selected{% endif %}"><i class="fa fa-envelope"></i> Tin nhắn{% if totalmail >= '1' %} <b>({{totalmail}})</b>{% endif %}</span></a><a href="/logout.php" title="Đăng xuất"><span class="item{% if url[0]=='logout.php' %} selected{% endif %}"><i class="fa fa-power-off" aria-hidden="true"></i> Đăng xuất</span></a>
+
+{% if signin and user['sex']!='' and url[0]!='farm' and url[0]!='user' %}
+{{func.add('user_'~signin,'on','now'|date('U', 'Asia/Ho_Chi_Minh'))}}
+{{func.up('show_online',signin,'up')}}
+{% endif %}
+
+{% else %}<span style="position: relative;"><a href="/login.php" title="Đăng nhập"><span class="item{% if url[0]=='login.php' %} selected{% endif %}"><i class="fa fa-sign-in" aria-hidden="true"></i> Đăng nhập</span></a><a href="/registration.php" title="Đăng ký tài khoản"><span class="item{% if url[0]=='registration.php'%} selected{% endif %}"><i class="fa fa-user-plus" aria-hidden="true"></i> Đăng ký</span></a>{% endif %}<a href="/library"><span class="item{% if url[0] in ['library','search.php'] %} selected{% endif %}"><i class="fa fa-list" aria-hidden="true"></i> Thư viện</span></a>
+</div></div>
+{% if url[0] not in ['login.php','registration.php'] %}<div class="box">{% endif %}
+{% endblock %}
+
+{% block end %}
+{% import '_functions' as func %}
+{% set url = get_uri_segments() %}
+{% if url[0] not in ['login.php','registration.php'] %}</div></div>{% endif %}
+{% set signin = func.signin()|trim %}
+{% set login = signin %}
+{% set on=func.get('show_online')|trim %}
+{% set online = {} %}
+{% for v in on|split('@') %}
+{% if loop.last==false %}
+{% if func.get('user_'~v|trim,'on')|trim > "now"|date("U")-300 %}
+{% set list_on %}<a href="/user/{{v|trim}}.html">{{avatar.mau_nick(v|trim,func.get('user_'~v|trim,'right'))}}</a>{% endset %}
+{% set online=online|merge({(v|trim):list_on}) %}
+{% else %}
+{{func.del('show_online',v|trim,'up')}}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+{% set backlink = {"total":1,"friend1":{"title":"Sololeveling.gq","link":"https://sololeveling.gq"}} %}
+{# {% if url[0]=='library' %}
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=Y33LJbPw"></script>
+{% endif %} #}
+{# {{func.music()}} #}
+{%if not get_data('stats')%}{%set x,x=save_data('stats',','),save_data('stats',',')%}{%endif%}{%set day,time=(now|date('U')+24750)|date('d'),now|date('U')+24750%}{%set s=get_data('stats')%}{%if 'Googlebot' in user_agent()%}{%set g,b=1,'Google'%}{%else%}{%set u=1%}{%endif%}{%set ss=s.0.data|split(',')%}{%if day!=ss.0%}{%set ss=''%}{%endif%}{%set sr=s.1.data|split(',')%}{%if sr.12 and time-sr[sr|length//3]>600%}{%set sr=s.1.data|split(sr[sr|length//3]).1|trim(',')%}{%elseif sr[sr|length-3] and time-sr[sr|length-3]>600%}{%set sr=sr[sr|length-3]~','~sr[sr|length-2]%}{%elseif time-sr[sr|length-2]>600%}{%set sr=sr[sr|length-2]%}{%else%}{%set sr=''%}{%endif%}{%set sd=s.1.data|replace({(','~sr~','):','})|replace({(','~get_cookie('stats')~','):','})%}{%if get_cookie('stats') and get_cookie('stats')|date('dmY')!=time|date('dmY')%}{%set f=1%}{%endif%}{%if not get_cookie('stats') or f%}{{update_data_by_id('stats',s.0.id,day|escape~','~(ss.1+u)|escape~','~(ss.2+f)|escape~','~(ss.3+g)|escape)}}{%endif%}{%if time-get_cookie('stats')>300 and time not in s.1.data%}{{update_data_by_id('stats',s.1.id,(','~time~b~sd))}}{{set_cookie('stats',time)}}{%endif%}{%set s=get_data('stats')%}{%set go,s0=s.1.data|split('Google')|length-1,s.0.data|split(',')%}
+<!-- {{((current_url|split('/').2)|split('.').0)|capitalize}} -->
+{% if func.signin()|trim and url[0]!='search.php' %}
+<script language="JavaScript" type="text/javascript">function tag(e,t){if(document.selection)document.form.msg.focus(),document.form.document.selection.createRange().text=e+document.form.document.selection.createRange().text+t;else if(null!=document.forms.form.elements.msg.selectionStart){var n=document.forms.form.elements.msg,o=n.value,s=n.selectionStart,l=n.selectionEnd-n.selectionStart;n.value=o.substr(0,s)+e+o.substr(s,l)+t+o.substr(s+l)}else document.form.msg.value+=e+t}function show_hide(e){obj=document.getElementById(e),"none"==obj.style.display?obj.style.display="block":obj.style.display="none"}</script>
+{% elseif not  func.signin() or url[0] in ['search.php'] %}
+<script>
+function togglecomments(a){a=document.getElementById(a);a.className="commentshown"==a.className?"commenthidden":"commentshown"};
+!function(){var Z={load:function E(c,f){var g=function d(){return window.XMLHttpRequest?new window.XMLHttpRequest:new ActiveXObject("Microsoft.XMLHTTP")}();g.open("GET",c,!0),g.onreadystatechange=function a(h,i){return function(){if(4===h.readyState&&200===h.status){try{i(null,JSON.parse(h.responseText))}catch(e){i(e,null)}}}}(g,f),g.send()}};(function D(a){if(!function d(e){return !!e&&"undefined"!=typeof e.required&&e.required instanceof Array}(a)){throw new Error("-- OptionsValidator: required options missing")}if(!(this instanceof D)){return new D(a)}var c=a.required;this.getRequiredOptions=function(){return c},this.validate=function(f){var g=[];return c.forEach(function(e){"undefined"==typeof f[e]&&g.push(e)}),g}});var R=function Y(d,g){var j=g.length,f=d.length;if(j<f){return !1}if(f===j){return d===g}d:for(var c=0,h=0;c<f;c++){for(var a=d.charCodeAt(c);h<j;){if(g.charCodeAt(h++)===a){continue d}}return !1}return !0},aa=new function H(){this.matches=function(a,c){return R(c.toLowerCase(),a.toLowerCase())}};var K=new function k(){this.matches=function(c,a){return !!c&&(c=c.trim().toLowerCase(),(a=a.trim().toLowerCase()).split(" ").filter(function(d){return 0<=c.indexOf(d)}).length===a.split(" ").length)}};var U={put:function B(c){if(ac(c)){return I(c)}if(function d(e){return Boolean(e)&&"[object Array]"===Object.prototype.toString.call(e)}(c)){return function a(f){var h=[];ad();for(var i=0,g=f.length;i<g;i++){ac(f[i])&&h.push(I(f[i]))}return h}(c)}return undefined},clear:ad,search:function b(d){return d?function c(g,j,m,h){for(var f=[],l=0;l<g.length&&f.length<h.limit;l++){var a=ab(g[l],j,m,h);a&&f.push(a)}return f}(Q,d,G.searchStrategy,G).sort(G.sort):[]},setOptions:function N(a){(G=a||{}).fuzzy=a.fuzzy||!1,G.limit=a.limit||10,G.searchStrategy=a.fuzzy?aa:K,G.sort=a.sort||W}};function W(){return 0}var Q=[],G={};function ad(){return Q.length=0,Q}function ac(a){return Boolean(a)&&"[object Object]"===Object.prototype.toString.call(a)}function I(a){return Q.push(a),Q}function ab(c,f,g,d){for(var a in c){if(!P(c[a],d.exclude)&&g.matches(c[a],f)){return c}}}function P(c,f){for(var h=!1,d=0,a=(f=f||[]).length;d<a;d++){var g=f[d];!h&&new RegExp(c).test(g)&&(h=!0)}return h}G.fuzzy=!1,G.limit=10,G.searchStrategy=G.fuzzy?aa:K,G.sort=W;var X={compile:function V(a){return T.template.replace(T.pattern,function(c,d){var f=T.middleware(d,a[d],T.template);return void 0!==f?f:a[d]||c})},setOptions:function J(a){T.pattern=a.pattern||T.pattern,T.template=a.template||T.template,"function"==typeof a.middleware&&(T.middleware=a.middleware)}},T={};T.pattern=/\{(.*?)\}/g,T.template="",T.middleware=function(){};var F={merge:function A(a,d){var f={};for(var c in a){f[c]=a[c],"undefined"!=typeof d[c]&&(f[c]=d[c])}return f},isJSON:function x(a){try{return !!(a instanceof Object&&JSON.parse(JSON.stringify(a)))}catch(c){return !1}}};!function(p){var e={searchInput:null,resultsContainer:null,json:[],success:Function.prototype,searchResultTemplate:'<div class="menu"><a href="{url}"><i class="fa fa-rss" aria-hidden="true"></i> {title}</a></div>',templateMiddleware:Function.prototype,sortMiddleware:function(){return 0},noResultsText:"<div class='menu'>Không tìm thấy nội dung.</div>",limit:10,fuzzy:!1,exclude:[]},f=["searchInput","resultsContainer","json"],d=function j(c){if(!function i(n){return !!n&&"undefined"!=typeof n.required&&n.required instanceof Array}(c)){throw new Error("-- OptionsValidator: required options missing")}if(!(this instanceof j)){return new j(c)}var a=c.required;this.getRequiredOptions=function(){return a},this.validate=function(o){var r=[];return a.forEach(function(n){"undefined"==typeof o[n]&&r.push(n)}),r}}({required:f});function g(a){e.success(a),U.put(a),function c(){e.searchInput.addEventListener("keyup",function(i){(function n(o){return -1===[13,16,20,37,38,39,40,91].indexOf(o)})(i.which)&&(m(),h(i.target.value))})}()}function m(){e.resultsContainer.innerHTML=""}function l(a){e.resultsContainer.innerHTML+=a}function h(c){(function n(i){return i&&0<i.length})(c)&&(m(),function a(i,s){var u=i.length;if(0===u){return l(e.noResultsText)}for(var o=0;o<u;o++){i[o].query=s,l(X.compile(i[o]))}}(U.search(c),c))}function q(a){throw new Error("SimpleJekyllSearch --- "+a)}p.SimpleJekyllSearch=function(a){return 0<d.validate(a).length&&q("You must specify the following required options: "+f),e=F.merge(e,a),X.setOptions({template:e.searchResultTemplate,middleware:e.templateMiddleware}),U.setOptions({fuzzy:e.fuzzy,limit:e.limit,sort:e.sortMiddleware}),F.isJSON(e.json)?g(e.json):function c(i){Z.load(i,function(n,o){n&&q("failed to get JSON ("+i+")"),g(o)})}(e.json),{search:h}}}(window)}();</script>
+<script type="text/javascript">var sjs = SimpleJekyllSearch({searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('results-container'), json: '{{current_url|split('/').0~"//"~current_url|split('/').2}}/search.json'})</script>
+{% endif %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/balloon-css/0.5.0/balloon.min.css"> <script src="https://cdnjs.cloudflare.com/ajax/libs/quicklink/1.0.0/quicklink.umd.js" type="641f351537e26735a375118b-text/javascript"></script> <script type="641f351537e26735a375118b-text/javascript"> window.addEventListener('load', () =>{ quicklink(); }); </script> <script type="641f351537e26735a375118b-text/javascript">(function(a,e,b,f,g,c,d){a[b]=a[b]||function(){(a[b].q=a[b].q||[]).push(arguments)};c=e.createElement(f);d=e.getElementsByTagName(f)[0];c.async=!0;c.src=g;d.parentNode.insertBefore(c,d)})(window,document,"galite","script","https://cdnjs.cloudflare.com/ajax/libs/ga-lite/2.0.1/ga-lite.min.js");galite("create","UA-123383139-1","auto");galite("send","pageview");</script>
+<div class="footer">
+<div class="footer_title">Thông tin</div>CafeĐắng là Trang Weblog phân phối và chia sẻ nội dung số với khẩu hiệu <b>Đam Mê, Nhiệt Huyết, Tự Tin Vững Bước</b> và tiêu chí <b>"Không Link Die"</b>.<br/>
+{% if backlink['total']>=1 and not signin or backlink['total']>=1 and signin and user['sex']!=null %}Đối tác - Bạn hữu: {% if backlink['total']==1 %}<a ref="dofollow" href="{{backlink['friend1'].link}}" target="_blank" title="{{backlink['friend1'].title}}{% if backlink['friend1'].desc!='' %} - {{backlink['friend1'].desc}}{% endif %}"> {{backlink['friend1'].title}} </a>{% else %}{% for friend in 1..(backlink['total']) %}<a ref="dofollow" href="{{backlink['friend'~friend].link}}" target="_blank" title="{{backlink['friend'~friend].title}}{% if backlink['friend'~friend].desc!='' %} - {{backlink['friend'~friend].desc}}{% endif %}"> {{backlink['friend'~friend].title}} </a>{% if loop.last==false %}, {% endif %}{% endfor %}{% endif %}<br/>{% endif %}
+{% if online|length > '0' and url[0] in ['community',''] %}Trực tuyến: {{online|sort|join(', ')|raw}}{% include '_stats' %}{% endif %}
+<div align="center">2019 © Cà Phê Đắng{% if signin %}<div id="select_style"><a href="/community/style.html">Tùy chọn giao diện</a></div>{% endif %}</div>
+</div>
+ </body>
+</html>
+{% endblock %}
+
+{% block mem %}
+{% set run = get_data('forum')|last.data|json_decode %}
+{% set slm = (run['account']/500)*100 %}
+{% set rslm = (run['account']//500)*100  %}
+<style>.c-max{width:100%;background-color:#ddd;text-align: right;}.skills{padding-top:2px;padding-bottom:2px;color:white;}.c{{rslm}}{width: {{slm}}%;background-color: #4CAF50;}</style><div class="c-max"><div class="skills c{{rslm}}"></div><div class="room">hạn mức: 
+ {{slm}}%</div></div>
+{% endblock %}
+
+{% block timeline %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set data= func.get(db)|trim|split('@')|reverse %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//page %}
+{% if total//page != total/page %}
+{% set page_max=total//page+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*page-page %}
+{% if total=='0' %}
+{% else %}
+<div class="phdr border_red"><a href="/timeline">Dòng thời gian</a></div>
+{% for i in data|slice(0,total)|slice(st,page) %}
+{% set entry = get_data('status_'~i|trim)|last.data|json_decode %}
+{% set jun = ("now"|date("U"))-entry['time'] %}
+{% if jun > 1 %}
+{% if entry['time']|date('d','Asia/Ho_Chi_Minh') == 'now'|date('d','Asia/Ho_Chi_Minh') %}
+{% set agos = func.ago(entry['time']) %}
+{% else %}
+{% set agos = entry['time']|date("H:i, d/m/Y","Asia/Ho_Chi_Minh")|replace({(now|date("d/m/Y","Asia/Ho_Chi_Minh")):'Hôm nay'}) %}
+{% endif %}
+{% endif %}
+{% if entry['author'] %}
+{% set author=get_data('user_'~func.rwurl(entry['author']))|last.data|json_decode %}
+<div class="timeline">
+<div class="time">{{agos}}</div>
+<div class="doc">
+{{avatar.mau_nick(func.rwurl(entry['author']),author['right'])}}: {{func.bbcode(entry['doc'])}}
+</div>
+</div>
+{% endif %} 
+{% endfor %}
+<div style="clear:both"></div>
+{% endif %}
+{% if hide_page=='1' %}{{func.paging(url|join('/')~'?p',p,page_max)}}{% endif %}
+{% endblock %}

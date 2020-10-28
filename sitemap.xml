@@ -1,0 +1,87 @@
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% from 'function.twig' import time,slug,description,time %}
+{% from 'func.twig' import mi_get,get,html_decode %}
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set idfirst = mi_get('show_blog')|split(' @ ')|reverse[0]|trim %}
+{% set per = '1000000000' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+      xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
+            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/</loc>
+  <lastmod>{{"now"|date("Y")}}-{{"now"|date("m")}}-{{"now"|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>1.00</priority>
+</url>
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/community</loc>
+  <lastmod>{{"now"|date("Y")}}-{{"now"|date("m")}}-{{"now"|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/library</loc>
+  <lastmod>{{"now"|date("Y")}}-{{"now"|date("m")}}-{{"now"|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+{% for i in mi_get('list_category')|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set slugcmm = get('category_'~i,'slug') %}
+{% if loop.last==false %}
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/category/{{idcmm}}-{{slugcmm}}/</loc>
+  <lastmod>{{time|date("Y")}}-{{time|date("m")}}-{{time|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+{% endif %}
+{% endfor %}
+{% if total == '0' %}
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set name = get('blog_'~i,'title') %}
+{% set id = get('blog_'~i,'id')|trim %}
+{% set category = get('blog_'~i,'category') %}
+{% set slug = get('blog_'~i,'slug') %}
+{% set cat = get('category_'~category,'ten') %}
+{% set catid = get('category_'~category,'id') %}
+{% set catslug = get('category_'~category,'slug') %}
+{% set time = get('blog_'~i,'time')|trim %}
+{% set view = get('blog_'~i,'view')|trim %}
+{% set content = get('blog_'~i,'content','raw') %}
+{% set mota = description(content) %}
+{% set thumb = get('blog_'~i,'thumb')|trim %}
+{% set cmt = get('blog_'~i,'comment_num')|trim %}
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/{{id}}-{{slug}}/</loc>
+  <lastmod>{{time|date("Y")}}-{{time|date("m")}}-{{time|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+{% for j in slug|split('-') %}
+<url>
+  <loc>{{current_url|split('/').0~"//"~current_url|split('/').2}}/search.php?key={{j}}</loc>
+  <lastmod>{{time|date("Y")}}-{{time|date("m")}}-{{time|date("d")}}T22:46:09+00:00</lastmod>
+  <priority>0.80</priority>
+</url>
+{% endfor %}
+{% endfor %}
+{% endif %}
+</urlset>

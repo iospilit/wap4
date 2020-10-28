@@ -1,0 +1,16 @@
+{% import '_functions' as func %}
+{% set on=func.get('show_online')|trim %}
+{% set online = {} %}
+{% for v in on|split('@') %}
+{% if loop.last==false %}
+{% if func.get('user_'~v|trim,'on')|trim > "now"|date("U")-300 %}
+{% set list_on %}<a href="/user/{{v|trim}}.html">{{avatar.mau_nick(v|trim,func.get('user_'~v|trim,'right'))}}</a>{% endset %}
+{% set online=online|merge({(v|trim):list_on}) %}
+{% else %}
+{{func.del('show_online',v|trim,'up')}}
+{% endif %}
+{% endif %}
+{% endfor %}
+{% set signin = func.signin()|trim %}
+{% set udata = get_data('user_'~signin)[0].data|json_decode %}
+{%set s=get_data('stats')%}{%set go,s0=s.1.data|split('Google')|length-1,s.0.data|split(',')%}{%if go>=1 %}, {{go}} <span style="color:#1849b5">G</span><span style="color:#de3018">o</span><span style="color:#efbA00">o</span><span style="color:#1849b5">g</span><span style="color:#31b639">l</span><span style="color:#de3018">e</span>{%endif%}{% set onl = s.1.data|split(',')|length-2-go %}{% if (onl-(online|length))>0 %} và {{onl-(online|length)}} vị khách khác{% endif %} {% if udata['right']>=7 and signin %}<br/>Lượt khách ghé thăm hôm nay: <b>{{s0.1|number_format(0,'.','.')}}</b>{% endif %}

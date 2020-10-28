@@ -1,0 +1,231 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% import 'news' as news %}
+{% from 'function.twig' import time,slug,description,time %}
+{% from 'func.twig' import mi_get,get,html_decode %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set time_now="now"|date("H:i","Asia/Ho_Chi_Minh") %}
+{% set hour=time_now|split(':')[0] %}
+{% if not signin %}
+{% if hour in 1..5 or hour in 18..23 or hour=='0' %}
+{% set style='2' %}
+{% else %}
+{% set style='1' %}
+{% endif %}
+{% else %}
+{% set style=user['style'] %}
+{% endif %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% if url[1]=='faq.html' %}
+{% set title='Quy định sử dụng' %}
+{% elseif url[1]=='style.html' and signin %}
+{% set title='Tùy chọn giao diện weblog' %}
+{% else %}
+{% set title = 'Cà Phê Đắng' %}
+{% endif %}
+{{block('head')}}
+{% if url[1]=='style.html' and signin %}
+<div class="phdr border_red"><b>Tùy chọn giao diện</b></div>
+{% if request_method()|lower == 'post' %}
+{% if get_post('style')!=user['style'] and get_post('style') in 1..5 %}
+{{func.add('user_'~signin,'style',get_post('style'))}}
+{% endif %}
+<div class="rmenu">Thay đổi thành công! Vui lòng <a href="/community/style.html">Tải lại trang</a> hoặc quay lại <a href="/">Trang chủ</a> để hưởng thụ thành quả :))</div>
+{% endif %}
+<form method="post" action="">
+<div class="menu"><div><input type="radio" name="style" value="1" {% if user['style']=='1' %}checked="checked" {% endif %}/> Light Style</div><div><input type="radio" name="style" value="2" {% if user['style']=='2' %}checked="checked" {% endif %}/> Dark Style</div></div>
+<div class="menu" align="center"><input type="submit" value="Lưu lại"></div>
+</form>
+{% elseif url[1]=='faq.html' %}
+<div id="left">
+<div class="phdr border_red"><b>Điều khoản</b></div>
+<div class="list-login"><p>- <b>CẤM</b> Đăng tin quảng cáo mang tính đa cấp, lừa đảo.<br/>- <b>CẤM</b> Đăng nội dung liên quan đến vấn đề phân biệt sắc tộc, tôn giáo, quốc gia.<br/>- <b>KHÔNG</b> Đăng nội dung thô tục, quấy rối tình dục, vu khống, đe dọa người khác.<br/>- <b>KHÔNG ĐƯỢC</b> Đăng nội dung xúc phạm một chủ thể cụ thể, đặc biệt là thành viên trong diễn đàn.<br/>- <b>KHÔNG ĐƯỢC</b> Đăng bài cùng một nội dung nhiều lần trong một hay nhiều chủ đề khác nhau.<br/>- <b>KHÔNG ĐƯỢC</b> Đăng lại bài viết hoặc tạo lại chủ đề đã bị xóa bởi Ban quản trị.<br/>- <b>KHÔNG ĐƯỢC</b> Đăng bài có nội dung không liên quan đến tiêu đề.<br/>- <b>TUYỆT ĐỐI CẤM và KHÔNG CHẤP NHẬN</b> Các hành vi cố tình giả mạo thành viên khác (hoặc các thành viên trên các diễn đàn, blog khác, chính trị gia, chủ tịch nước, chủ tịch quốc hội,...) với bất kỳ mục đích nào.<br/><br/>Quy định trên đây có thể thay đổi bất kỳ lúc nào.<br />Quy định này áp dụng cho tất cả các thành viên và Ban quản trị, thành viên vi phạm nhiều lần sẽ bị ban, vi phạm nặng có thể dẫn đến xóa bỏ tài khoản vĩnh viễn.</p></div>
+</div><div id="right">
+<div class="phdr border_green" id="word"><b>Chức năng soạn thảo</b></div>
+<div class="list-login"><div class="rmenu"><p>Chỉ có thể sử dụng HTML khi viết bài ở thư viện.</p><p>Sử dụng BBCODE và SMILE ở tất cả chức năng có liên quan đến soạn thảo trong trang web, như: chat, nhắn tin, viết bài ở thư viện.</p></div><p>[url=liên kết]chỉ mục[/url]: dẫn chỉ mục từ liên kết khác</p><br/><p>[b]in đậm văn bản[/b]: <b>in đậm văn bản</b></p><br/><p>[i]in nghiêng văn bản[/i]: <i>in nghiêng văn bản</i></p><br/><p>[s]gạch ngang văn bản[/s]: <s>gạch ngang văn bản</s></p><br/><p>[u]gạch dưới văn bản[/u]: <u>gạch dưới văn bản</u></p><br/><p>[d]liên kết tải xuống[/d]: tải xuống</p><br/><p>[code]mã[/code]: hiển thị một đoạn mã vào khung</p><br/><p>[center]căn giữa[/center]: <center>căn giữa</center></p><br/><p>[left]căn lề trái[/left]: căn lề trái</p><br/><p>[white]chữ màu trắng[/white]: <font color="white">chữ màu trắng</font></p><br/><p>[red]chữ màu đỏ[/red]: <font color="red">chữ màu đỏ</font></p><br/><p>[blue]chữ màu xanh nước biển[/blue]: <font color="blue">chữ màu xanh nước biển</font></p><br/><p>[green]chữ màu xanh lá[/green]: <font color="green">chữ màu xanh lá</font></p></div><div>
+</div><div style="clear:both"></div>
+{% else %}
+{% if signin %}
+{% if user.sex=='' %}
+<div class="menu">
+<div class="rmenu">
+<p><b><font style="color:red">* Chú ý:</font></b> Chào mừng {{func.bbcode('@'~signin~' ')}} đến với weblog của gia đình chúng tớ! Vậy là chỉ còn 1 bước cuối cùng nữa thôi là cậu có thể hoàn tất thông tin đăng ký tài khoản của cậu rồi. Có lẽ, đây là lần đầu tiên cậu tham gia Cà Phê Đắng phải không nè 
+(^˵◕ω◕˵^) , chính vì vậy, bài này tớ sẽ hướng dẫn cơ bản cho cậu về một số chức năng của weblog chúng tớ. </p>
+<p><b>Đầu tiên</b> là <b>bbcode</b>, cậu có thể sử dụng các đoạn mã sau ở phòng chat, tin nhắn và cả dòng thời gian nữa. Và tất nhiên ở các phòng có sử dụng khung soạn thảo đều được kèm theo thanh công cụ bbcode (toolbar) để cậu có thể cảm thấy tiện lợi hơn khi sử dụng.<br/>[url=liên kết]chỉ mục[/url]: dẫn chỉ mục từ liên kết khác<br/>[b]in đậm văn bản[/b]: <b>in đậm văn bản</b><br/>[i]in nghiêng văn bản[/i]: <i>in nghiêng văn bản</i><br/>[s]gạch ngang văn bản[/s]: <s>gạch ngang văn bản</s><br/>[u]gạch dưới văn bản[/u]: <u>gạch dưới văn bản</u><br/>[d]liên kết tải xuống[/d]: tải xuống<br/>[code]mã[/code]: hiển thị một đoạn mã vào khung<br/>[center]căn giữa[/center]: <center>căn giữa</center><br/>[left]căn lề trái[/left]: căn lề trái<br/>[white]chữ màu trắng[/white]: <font color="white">chữ màu trắng</font><br/>[red]chữ màu đỏ[/red]: <font color="red">chữ màu đỏ</font><br/>[blue]chữ màu xanh nước biển[/blue]: <font color="blue">chữ màu xanh nước biển</font><br/>[green]chữ màu xanh lá[/green]: <font color="green">chữ màu xanh lá</font></p>
+<p><b>Tiếp theo,</b> cậu có thấy cái nút ngoài cùng bên phải trên đầu trang không? Khi nhấp vào đó, cậu sẽ thấy khu giải trí của weblog, và một số công cụ hỗ trợ. Ở đây cậu có thể nhập vai vào một bác nông dân làm vườn rồi chăm sóc nông trại của mình, hay thử vận may với trò chơi đập trứng, buốt não trong phòng xếp chữ,... Và một công cụ rất hữu ích nếu cậu muốn up ảnh đại diện của mình - <b>Upload Ảnh</b><ol>Các bước up ảnh đại diện: (cậu có thể chọn ảnh mặc định của weblog đặt làm ảnh đại diện)<li> Nhấp vào <a href="/up-img">Upload Ảnh</a> trong mục Công cụ tiện ích.</li><li> Chọn ảnh từ thư viện trong điện thoại hoặc máy tính. Sau đó hệ thống sẽ trả về link ảnh cho cậu.</li><li> Copy và gán vào <a href="/user/{{signin}}.html?act=profile&up=link&u=edit">ĐÂY</a>. (Trang cá nhân -> Đổi ảnh đại diện -> Nhập link ảnh đại diện).</li><li> Trở về trang chủ và hưởng thụ thành quả.</li></ol></p><p><b>Cuối cùng, </b> Tớ chúc cậu online vui vẻ, luôn vui vẻ, tràn đầy tự tin và nhiệt huyết trong cuộc sống, và luôn hạnh phúc với một nửa của mình nhé! Đừng quên giới thiệu <b>Cà Phê Đắng</b> cho bạn bè để weblog chúng ta sôi động hơn nữa!</p>
+<p>
+{% if request_method()|lower == "post" and user.sex=='' %}
+{% if get_post('nameh')!='' and get_post('sex')!='' and get_post('nameh')!='Admin' and get_post('nameh')!='admin' and get_post('nameh')!='Trùm' %}
+{% set chest1 = {"ao":"0.","quan":"0.","canh":"0.","docamtay":"0.","khac":"0.","khuonmat":"0.","kinh":"0.","mat":"0.","matna":"0.","non":"0.","nen":"0.","thucung":"0.","toc":"0."} %}
+{% set chest2 = {"ao":"0.","quan":"0.","canh":"0.","docamtay":"0.","khac":"0.","khuonmat":"0.","kinh":"0.","mat":"0.","matna":"0.","non":"0.","nen":"0.","thucung":"0.","toc":"14."} %}
+{% set chest3 = {"ao":"0.","quan":"0.","canh":"0.","docamtay":"0.","khac":"0.","khuonmat":"0.","kinh":"0.","mat":"0.","matna":"0.","non":"0.","nen":"0.","thucung":"0.","toc":"7."} %}
+{{func.add('user_'~signin,'sex',get_post('sex'))}}
+{{func.add('user_'~signin,'name',get_post('nameh'))}}
+{% if get_post('sex')=='female' and get_post('nameh')!='' %}
+{{func.add('user_'~signin,'avatar','0.0.0.0.0.0.0.0.0.0.0.0.14')}}
+{{func.add('user_'~signin,'chest',chest2)}}
+{{func.add('user_'~signin,'avt','x1')}}
+{% elseif get_post('sex')=='male' and get_post('nameh')!='' %}
+{{func.add('user_'~signin,'avatar','0.0.0.0.0.0.0.0.0.0.0.0.0')}}
+{{func.add('user_'~signin,'chest',chest1)}}
+{{func.add('user_'~signin,'avt','x7')}}
+{% elseif get_post('sex')=='transgender' and get_post('nameh')!='' %}
+{{func.add('user_'~signin,'avatar','0.0.0.0.0.0.0.0.0.0.0.0.7')}}
+{{func.add('user_'~signin,'chest',chest3)}}
+{{func.add('user_'~signin,'avt','x2')}}
+{% endif %}
+Xác nhận thành công! <a href="/community">Click để về trang cộng đồng</a>
+{% else %}
+<div>Độ dài của tên hiển thị không hợp lệ hoặc lựa chọn không chính xác! <a href="/community">Click để xác nhận lại</a></div>
+{% endif %}
+{% else %}
+<form method="post" action="">
+<center>
+<div>Còn bây giờ... hãy xác nhận giới tính của cậu đi nào (๑◕‿◕๑) !</div>
+<select name="sex"><option value="male">Nam</option> <option value="female">Nữ</option>
+<option value="transgender">LGBT</option>
+</select>
+<div>Tên hiển thị <b style="color:red">(**)</b>:</div>
+<input type="text" name="nameh" value="" required>
+<p><input class="btn btn-primary" type="submit" name="submit" value="Xác nhận"></p>
+</center>
+<div><b style="color:red">(**)</b>: Giới hạn kí tự (Min.3 - Max.10). Miễn phí 1 lần duy nhất, sau này có thể đổi lại bằng thẻ đổi tên. Hãy cân nhắc kĩ trước khi nhập nội dung này!</div>
+</form>
+{% endif %}
+</p>
+</div>
+{% else %}
+{% if user['xu']<='5000' and "now"|date('d.m.Y','Asia/Ho_Chi_Minh')==user.reg|date('d.m.Y','Asia/Ho_Chi_Minh') %}
+<p>
+<div class="c">
+Chào mừng bạn đến với <b>Cà Phê Đắng</b>. Hãy trở thành một thành viên tích cực với việc đầu tiên là chăm sóc nông trại!
+</div>
+</p>
+{% endif %}
+<div id="right">
+{#<div class="phdr"><i class="fa fa-globe" aria-hidden="true"></i> Tin tức - Thông báo</div>#}
+{# <div class="rmenu">{% if get_get('music')=='on' %}{{set_cookie('music','yes')}}{{set_cookie('music_name','null')}}{{set_cookie('music_link','null')}}Bật nghe nhạc thành công! <a href="/mp3">Nhấp vào đây</a> để chọn bài bạn nhé :)){% elseif get_get('music')=='off' %}{{delete_cookie('music','yes')}}{{delete_cookie('music_name','null')}}{{delete_cookie('music_link','null')}}Bạn đã tắt nhạc! Bạn có muốn bật lại không? (<a href="?music=on">bật</a>){% else %}{% if get_cookie('music')!='yes' %}Bạn có muốn bật trình phát nhạc không? (<a href="?music=on">bật</a>){% else %}Bạn có muốn tắt trình phát nhạc không? (<a href="?music=off">tắt</a> / <a href="/mp3">Chọn bài</a>){% endif %}{% endif %}
+</div> #}
+{% set data= func.get('news')|trim|split('@')|reverse %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//3 %}
+{% if total//3 != total/3 %}
+{% set page_max=total//3+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*3-3 %}
+{% for i in data|slice(0,total)|slice(st,3) %}{% set view = get_data('news_id_'~i|trim)[0].data|json_decode %}<div class="menu">
+<big>{{view['title']}}</big><br/>{{func.bbcode(view['doc'])}}</div>{% endfor %}
+<div class="rmenu"><a href="/news"><font color="violet"><i class="fa fa-newspaper-o" aria-hidden="true"></i> Lưu trữ tin tức ({{total|default(0)}})</font></a> </div>
+</div>
+<div id="left">
+{#
+{% set db = 'status' %}
+{% set page = '2' %}
+{% set hide_page = '0' %}
+{{block('timeline')}}
+#}
+{% include 'guestbook' %}
+</div>
+<div style="clear:both"></div>
+</div>
+{% endif %}
+
+
+
+{% else %}
+<div id="right">
+
+{% set key = 'list_category' %}
+{% set data = mi_get(key) %}
+<div class="phdr border_red"> Chuyên mục</div>
+{% for i in data|split(' @ ')|reverse %}
+{% set cmm = get('category_'~i,'ten') %}
+{% set idcmm = get('category_'~i,'id') %}
+{% set slugcmm = get('category_'~i,'slug') %}
+{% if loop.last==false %}
+<div class="list1"><i class="fa fa-cube" aria-hidden="true"></i> <a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/category/{{idcmm}}-{{slugcmm}}/">{{cmm}}</a></div>
+{% endif %}
+{% endfor %}
+
+<div class="phdr border_blue" id="t"> Công cụ tiện ích</div>
+<div class="menu">» <a href="/tools/s-shot.php">Chụp ảnh màn hình wap/web</a></div>
+<div class="menu">» <a href="/tools/teamobi">Lấy ảnh nhân vật game Teamobi</a></div>
+<div class="menu">» <a href="/tools/calculator/equation.php">Giải phương trình bậc 2 một ẩn</a></div>
+<div class="menu">» <a href="/tools/calculator/factorial.php">Hoán vị (n giai thừa)</a> / <a href="/tools/calculator/nPr-nCr.php">Chỉnh hợp - Tổ hợp</a></div>
+</div>
+{% endif %}
+{% if signin and user['sex']!=null or not signin %}
+<div id="{% if signin %}right{% else %}left{% endif %}">
+{% set data = mi_get('show_blog')|split(' @ ')|reverse  %}
+{% set idfirst = mi_get('show_blog')|split(' @ ')|reverse[0]|trim %}
+{% set per = '10' %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+{% else %}
+<div class="phdr border_orange"> Mới cập nhật <div style="float:right"><a href="/search.php"><i class="fa fa-search" aria-hidden="true"></i></a></div></div>
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set name = get('blog_'~i,'title') %}
+{% set id = get('blog_'~i,'id')|trim %}
+{% set category = get('blog_'~i,'category') %}
+{% set slug = get('blog_'~i,'slug') %}
+{% set cat = get('category_'~category,'ten') %}
+{% set catid = get('category_'~category,'id') %}
+{% set catslug = get('category_'~category,'slug') %}
+{% set time = get('blog_'~i,'time')|trim %}
+{% set view = get('blog_'~i,'view')|trim %}
+{% set content = get('blog_'~i,'content','raw') %}
+{% set mota = description(content) %}
+{% set thumb = get('blog_'~i,'thumb')|trim %}
+{% set cmt = get('blog_'~i,'comment_num')|trim %}
+{% if loop.index=='1' and style!='2' %}
+{% set cat2 = get('blog_'~i,'content')|split('[search]')[1]|split('[/search]')[0] %}
+{% set pre = name|split('[')[1]|split(']')[0] %}
+<article class="newsx"><span class="ribbon_new"></span> <i class="fa fa-arrow-right" aria-hidden="true"></i><a href="/library/{{id}}-{{slug}}/"> {% if pre!='' %}{{name|replace({(pre):'','[':'',']':''})}}{% else %}{{name}}{% endif %}</a>
+<table width="100%"><td width="30%" align="center"><img  src="{{get('blog_'~i,'content')|split('[img]')[1]|split('[/img]')[0]|default('/images/blog.jpeg')}}" alt="{{ten}}" class="photo"/></td><td width="70%"><i class="fa fa-clock-o" aria-hidden="true"></i> Đăng lúc: {{time(time)}}<br/><i class="fa fa-user" aria-hidden="true"></i> Tác giả: {{get('blog_'~i,'content')|split('[author]')[1]|split('[/author]')[0]|default('Không rõ')}}<br/><i class="fa fa-book" aria-hidden="true"></i> Thể loại: {% set cat_hide %}{% if ten|split('[')[1]|split(']')[0]!='' or content|split('[search]')[1]|split('[/search]')[0]!='' %}{% for search in cat2|lower|split(', ') %}{% if (ten|split('[')[1]|split(']')[0])|lower != search %}{{search|capitalize}}{% if loop.last == false %}, {% endif %}{% endif %}{% endfor%}{% if (ten|split('[')[1]|split(']')[0])|lower != '' and (cat2|split(', ')|length-1) >= '1' and (ten|split('[')[1]|split(']')[0])|lower not in cat2|split(', ') %}, {% endif %}{{ten|split('[')[1]|split(']')[0]|lower|capitalize}}{% else %} Chưa phân loại{% endif %}{% endset %}{{cat_hide|replace({", , ":", "})}}</td></table></article>
+{% else %}
+<div class="list1 pre"><a href="{{current_url|split('/').0~"//"~current_url|split('/').2}}/library/{{id}}-{{slug}}/"> {{func.pre(name)}}</a></div>
+{% endif %}
+{% endfor %}
+{{func.paging(''~url|join('/')~'?p',p,page_max)}}
+{% endif %}
+{% endif %}
+{% set login = signin %}
+{% set last_comment %}<div class="phdr border_green"> Bình luận gần đây</div>
+{% set dataa= func.get('blog_comment')|trim|split('@')|reverse %}
+{% set totall=dataa|length-1 %} 
+{% for i in dataa|slice(0,totall)|slice(0,5) %}
+{% set cmt = get_data('comment_'~i|trim)|last.data|json_decode %}
+<div class="menu">{% if get_data_count('user_'~cmt['n'])!='0' %}{{avatar.mau_nick(cmt['n'],func.get('user_'~cmt['n'],'right'))}}{% else %}<b>{{cmt['n']}}</b>{% endif %}: {{func.bbcode(cmt['c'])}} <font color="gray"><small>({{avatar.ago(cmt['ago'])}})</small></font></div>
+{% endfor %}{% endset %}
+
+{% if login and login not in on|split('@') %}
+{{func.up('show_online',login,'up')}}
+{% endif %}
+
+{% endif %}
+</div>
+<div style="clear:both"></div>
+{{block('end')}}
