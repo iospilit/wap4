@@ -1,0 +1,34 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% from 'function.twig' import get,mi_add,mi_get,mi_up,time,mi_del %}
+{% from 'func.twig' import mi_get,mi_up,mi_del,k_del %}
+{% set title = 'Thông báo của tôi' %}
+{% if func.signin|trim %}
+{% set signin = func.signin|trim %}
+{{block('head')}}
+<div class="phdr">Thông báo của tôi</div>
+{% set data= func.get('notification_'~signin)|trim|split('@')|reverse %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//10 %}
+{% if total//10 != total/10 %}
+{% set page_max=total//10+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*10-10 %}
+{% if total=='0' %}<div class="menu">Chưa có thông báo nào!</div>{% endif %}
+{% for i in data|slice(0,total)|slice(st,10) %}
+{% set ntf = get_data('notification_'~signin~'_'~i|trim)|last.data|json_decode %}
+<div class="{% if ntf['view']=='1' %}list-login{% else %}rmenu{% endif %}">{{func.bbcode(ntf['c'])}} <font color="gray"><small>({{time(ntf['ago'])}})</small></font></div>{% if ntf['view']=='1' %}{% else %}{{func.add('notification_'~signin~'_'~(i|trim),'view','1')}}{% endif %}
+{% endfor %}
+{{func.paging(url|join('/')~'?p',p,page_max)}}
+
+{{block('end')}}
+{% else %}
+{% include '_404' %}
+{% endif %}

@@ -1,0 +1,148 @@
+{# Chú ý:
+# Cửa hàng: id.item.HP.money
+# Rương VP: ao.quan.canh.docamtay.khac.khuonmat.kinh.mat.matna.non.nen.thucung.toc
+#}
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set title = 'Rương đồ của tôi' %}
+{{block('head')}}
+{% if signin %}
+<div class="phdr"><b>Kho đồ dùng {% if url[1] in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %} / {%if url[1]=='ao' %}Áo{% elseif url[1]=='quan' %}Quần{% elseif url[1]=='canh' %}Cánh{% elseif url[1]=='docamtay' %}Đồ cầm tay{% elseif url[1]=='khac' %}Hào quang{% elseif url[1]=='khuonmat' %}Khuôn mặt{% elseif url[1]=='kinh' %}Kính{% elseif url[1]=='mat' %}Mắt{% elseif url[1]=='matna' %}Mặt nạ{% elseif url[1]=='non' %}Nón{% elseif url[1]=='nen' %}Nền sau{% elseif url[1]=='thucung' %}Thú cưng{% elseif url[1]=='toc' %}Tóc{% endif %} <a href="/chest">(quay lại)</a>{% endif %}</b></div>
+{%if url[1] in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %}
+{% set data = (user['chest'])[url[1]]|trim|split('.') %}
+{% set total = data|length-1 %}
+{% set per='10' %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url=get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total <= 1 %}
+<div class="menuItem" style="background-color:#e9ccd2;color:red" align="center"><b>Vườn không nhà trống !</b></div>
+{% else %}
+{% if get_get('act')=='wear' and get_get('id')!='' or get_get('act')=='remove' and get_get('id')!='' %}
+{% if get_get('id') not in data %}
+<div class="menuItem" style="background-color:#e9ccd2;color:red" align="center"><b>Vật phẩm này không tồn tại trong rương của bạn !</b></div>
+{% else %}
+{% if get_get('act')=='wear' %}
+{% set id=get_get('id')|trim %}
+{% elseif get_get('act')=='remove' %}
+{% set id = '0' %}
+{% endif %}
+{# wear #}
+{% if url[1]=='ao' %}
+{% set save_avatar = id~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='quan' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~id~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='canh' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~id~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='docamtay' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~id~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='khac' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~id~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='khuonmat' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~id~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='kinh' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~id~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='mat' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~id~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='matna' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~id~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='non' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~id~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='nen' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~id~'.'~user['avatar']|split('.')[11]|trim~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='thucung' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~id~'.'~user['avatar']|split('.')[12]|trim %}
+{% elseif url[1]=='toc' %}
+{% set save_avatar = user['avatar']|split('.')[0]|trim~'.'~user['avatar']|split('.')[1]|trim~'.'~user['avatar']|split('.')[2]|trim~'.'~user['avatar']|split('.')[3]|trim~'.'~user['avatar']|split('.')[4]|trim~'.'~user['avatar']|split('.')[5]|trim~'.'~user['avatar']|split('.')[6]|trim~'.'~user['avatar']|split('.')[7]|trim~'.'~user['avatar']|split('.')[8]|trim~'.'~user['avatar']|split('.')[9]|trim~'.'~user['avatar']|split('.')[10]|trim~'.'~user['avatar']|split('.')[11]|trim~'.'~id %}
+{% endif %}
+{{func.add('user_'~signin,'avatar',save_avatar)}}
+<div class="menuItem" style="background:#51FFA9">{% if get_get('act')=='wear' %}Thay{% elseif get_get('act')=='remove' %}Tháo{% endif %} đồ thành công! <a href="/{{url[0]}}/{{url[1]}}">Click vào đây</a> để trở về rương đồ chứa vật phẩm này.</a></div>
+{# end # code by valerat02 #}
+{% endif %}
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set i = i|trim %}
+{% if i!=0 %}
+<div class="menuItem">
+<table id="{{url[1]}}{{i}}" cellpadding="0" cellspacing="1"><tr><td width="auto"><img class="avt" src="
+http://valeric.000webhostapp.com/avatar/images/{{url[1]}}/{{i}}.png" width="40" height="40" /></td><td>
+<a href="/{{url[0]}}/{{url[1]}}/?act=wear&id={{i}}">
+<button>Sử dụng</button>
+</a></td></tr></table>
+</div>
+{% endif %}
+{% endfor %}
+{{avatar.page_item('../chest/'~url[1]~'/?p',p,page_max)}}
+{% endif %}
+{% endif %}
+{% else %}
+<div class="list-login">» <a href="../{{url[0]}}/ao">Áo</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/quan">Quần</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/docamtay">Đồ cầm tay</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khac">Hào quang</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/khuonmat">Khuôn mặt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/kinh">Kính</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/mat">Mắt</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/matna">Mặt nạ</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/non">Nón</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/nen">Nền sau</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/thucung">Thú cưng</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/toc">Tóc</a></div>
+<div class="list-login">» <a href="../{{url[0]}}/canh">Cánh</a></div>
+{% endif %}
+{% if url[1]=='ao' %}
+{% set item='0' %}
+{% elseif url[1]=='quan' %}
+{% set item='1' %}
+{% elseif url[1]=='canh' %}
+{% set item='2' %}
+{% elseif url[1]=='docamtay' %}
+{% set item='3' %}
+{% elseif url[1]=='khac' %}
+{% set item='4' %}
+{% elseif url[1]=='khuonmat' %}
+{% set item='5' %}
+{% elseif url[1]=='kinh' %}
+{% set item='6' %}
+{% elseif url[1]=='mat' %}
+{% set item='7' %}
+{% elseif url[1]=='matna' %}
+{% set item='8' %}
+{% elseif url[1]=='non' %}
+{% set item='9' %}
+{% elseif url[1]=='nen' %}
+{% set item='10' %}
+{% elseif url[1]=='thucung' %}
+{% set item='11' %}
+{% elseif url[1]=='toc' %}
+{% set item='12' %}
+{% endif %}
+{%if url[1] in ['ao','quan','canh','docamtay','khac','khuonmat','kinh','mat','matna','non','nen','thucung','toc'] %}
+<div class="phdr"><b>Vật phẩm đang mặc</b></div>
+<div class="menuItem">
+<table id="{{signin}}" cellpadding="0" cellspacing="1"><tr><td width="auto"><img class="avt" src="
+http://valeric.000webhostapp.com/avatar/images/{{url[1]}}/{{user['avatar']|split('.')[item]|trim}}.png" width="40" height="40" /></td><td><font color="green"> (Đang mặc) </font>
+<br/>
+{% if user['avatar']|split('.')[item]|trim >= 1 %}<a href="/{{url[0]}}/{{url[1]}}/?act=remove&id=0">
+<button>Tháo ra</button></a>{% endif %}</td></tr></table>
+</div>
+{% endif %}
+{% else %}
+<div class="menuItem" style="background-color:#e9ccd2;">Chức năng này chỉ dành cho thành viên của cộng đồng !</div>
+{% endif %}
+{{block('end')}}

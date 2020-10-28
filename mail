@@ -1,0 +1,140 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set title='Tin nhắn' %}
+{% if url[1]=='member.json' %}
+{% set data = func.get('member')|split('@')|reverse  %}
+{% set per = data|length-1 %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set url = get_uri_segments() %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+[
+{
+      "title"    : "Tài khoản không tồn tại!",
+      "url"      : ""
+    }
+]
+{% else %}
+[
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% if get_data_count('user_'~func.rwurl(i|trim))!='0' and i|trim!= signin %}
+{% set uid=get_data('user_'~i|trim)|last.data|json_decode %}
+    {
+      "title"    : "{{uid['name']}} (@{{uid['nick']}})",
+      "url"      : "../mail/{{uid['nick']}}"
+    }{% if loop.last==false %} ,{% endif %}
+{% endif %}
+{% endfor %}
+{% endif %}
+]
+{% else %}
+{{block('head')}}
+{% if signin %}
+{% if func.get('user_'~signin,'ban')=='1' %}
+<div class="phdr border_red"><i class="fa fa-inbox" aria-hidden="true"></i> Hộp thư</div>
+<div class="room" align="center"><b><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></b> Bố em hút rất nhiều thuốc =))</div>
+{% else %}
+{% set you = get_data('user_'~url[1])[0].data|json_decode %}
+{% set me = get_data('user_'~signin)[0].data|json_decode %}
+{% if you['nick']|trim|length > '2' and url[1] != signin %}
+<div class="phdr border_red"><a href="/mail"><i class="fa fa-inbox" aria-hidden="true"></i> Hộp thư</a> / <a href="/user/{{you['nick']}}.html">{{avatar.mau_nick(url[1],you['right'])}}</a> ({{func.ago(you['on']|trim)}})</div>
+{% include 'mail_send' %}
+{% set per = '10' %}
+{% set data = func.get('mail_'~signin~'_'~url[1])|split('@') %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<div class="c"> Hộp thư trống </div>
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set mail = get_data('mail_'~i|trim)[0].data|json_decode %}
+{% if mail['name'] != signin and mail['view'] == 'no' %}
+{{func.add('mail_'~i|trim,'view','yes')}}
+{% endif %}
+<div class="{% if mail['view'] != 'no' %}menu{% else %}rmenu{% endif %}"><table id="chat" cellpadding="0" cellspacing="1"><tr><td width="auto"><img class="avt" src="{{avatar.avtdefault(mail['name'])}}"/></td><td> <a href="/user/{{func.rwurl(mail.name)}}.html">
+{% if func.get('user_'~func.rwurl(mail.name),'ban') =='1' %}<s>{{func.get('user_'~func.rwurl(mail.name),'name')}}</s>{% else %}{{avatar.mau_nick(func.rwurl(mail.name),func.get('user_'~func.rwurl(mail.name),'right'))}}{% endif %}
+</a> <br/><i class="fa fa-clock-o"></i> {{mail['time']|date("H:i, d/m/Y","Asia/Ho_Chi_Minh")|replace({(now|date("d/m/Y","Asia/Ho_Chi_Minh")):'Hôm nay'})}}</td></tr></table><div class="chatbox"><span class="textchat"> </span> {% if func.get('user_'~func.rwurl(entry.name),'ban') =='1' %}Nội dung đã bị ẩn do người này đã vi phạm quy định của weblog{% else %}{{func.bbcode(mail['comment'])}}{% endif %} </div> </div>
+{% endfor %}
+{% endif %}
+{{func.paging('mail/'~url[1]~'?p',p,page_max)}}
+{% else %}
+<div class="phdr border_red"><i class="fa fa-pencil" aria-hidden="true"></i> Bạn muốn soạn tin nhắn gửi đến ai ?</div>
+<div class="menu" align="center">
+<form action="" method="get"><input type="text" id="search-input" name="key" value="{{get_get('key')}}" placeholder="Nhập từ khóa cần tìm..."><button type="submit"><i class="fa fa-search" aria-hidden="true"></i> Tìm</button></form></div>
+{% if get_data_count('user_'~func.rwurl(get_get('key')))!='0' and signin!=func.get('user_'~func.rwurl(get_get('key')),'nick') %}<div class="menu"><a href="../mail/{{func.get('user_'~func.rwurl(get_get('key')),'nick')}}"><i class="fa fa-user" aria-hidden="true"></i> {{func.get('user_'~func.rwurl(get_get('key')),'name')}} (@{{func.get('user_'~func.rwurl(get_get('key')),'nick')}})</a></div>{% endif %}
+<div id="results-container"></div>
+<div class="phdr border_red"><i class="fa fa-inbox" aria-hidden="true"></i> Hộp thư</div>
+{% set per = '10' %}
+{% set data = func.get('list_mail_'~signin)|split('@') %}
+{% set total = data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% if total == '0' %}
+<div class="rmenu" style="background-color:#e9ccd2;">Danh sách trống</div>
+{% else %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+{% set user = get_data('user_'~i|trim)[0].data|json_decode %}
+{% set j = func.get('mail_'~signin~'_'~i|trim)|split('@') %}
+{% set mail = get_data('mail_'~j[0]|trim)[0].data|json_decode %}
+{% set name %}{% endset %}
+{% for k in j %}
+{% set inmail = get_data('mail_'~k|trim)[0].data|json_decode %}
+{% if inmail['name'] != signin and inmail['view'] == 'no' %}
+{% set name=name~'@'~inmail['name'] %}
+{% endif %}
+{% endfor %}
+{% set total = name|split('@')|length-1 %}
+{{func.del('new_mail_'~signin,mail['name'],'up')}}
+{% if total=='0' %}<div class="menu chat-item">{% else %}<div class="rmenu chat-item" style="background-color:#f08080;">{% endif %}<table width="100%" cellpadding=0 cellspacing=0> <tr valign="top"> <td width="44px"><img src="{{avatar.avtdefault(user['nick'])|trim}}" class="chat-avatar" /></td> <td> <div><a href="/mail/{{i|trim}}">{{avatar.mau_nick(user['nick'],func.get('user_'~user['nick'],'right'))}}</a> {% if total > '0' %}({{total}}){% endif %}</div> <div>{{func.bbcode(mail['comment']|slice(0,200))}}</div> <div class="chat-time">{{func.ago(mail['time']|trim)}}</div></td> </tr> </table></div>
+{% endfor %}
+{% endif %}
+{{func.paging('mail?p',p,page_max)}}
+{% endif %}
+{% if url[1]=='' %}
+<style>.chat-item:after{display:block;content:'';clear:both}.chat-avatar{width:40px;height:40px;border-radius:50%;float:left}.chat-time{font-size:smaller;color:gray}</style>
+<script>!function(){var Z={load:function E(c,f){var g=function d(){return window.XMLHttpRequest?new window.XMLHttpRequest:new ActiveXObject("Microsoft.XMLHTTP")}();g.open("GET",c,!0),g.onreadystatechange=function a(h,i){return function(){if(4===h.readyState&&200===h.status){try{i(null,JSON.parse(h.responseText))}catch(e){i(e,null)}}}}(g,f),g.send()}};(function D(a){if(!function d(e){return !!e&&"undefined"!=typeof e.required&&e.required instanceof Array}(a)){throw new Error("-- OptionsValidator: required options missing")}if(!(this instanceof D)){return new D(a)}var c=a.required;this.getRequiredOptions=function(){return c},this.validate=function(f){var g=[];return c.forEach(function(e){"undefined"==typeof f[e]&&g.push(e)}),g}});var R=function Y(d,g){var j=g.length,f=d.length;if(j<f){return !1}if(f===j){return d===g}d:for(var c=0,h=0;c<f;c++){for(var a=d.charCodeAt(c);h<j;){if(g.charCodeAt(h++)===a){continue d}}return !1}return !0},aa=new function H(){this.matches=function(a,c){return R(c.toLowerCase(),a.toLowerCase())}};var K=new function k(){this.matches=function(c,a){return !!c&&(c=c.trim().toLowerCase(),(a=a.trim().toLowerCase()).split(" ").filter(function(d){return 0<=c.indexOf(d)}).length===a.split(" ").length)}};var U={put:function B(c){if(ac(c)){return I(c)}if(function d(e){return Boolean(e)&&"[object Array]"===Object.prototype.toString.call(e)}(c)){return function a(f){var h=[];ad();for(var i=0,g=f.length;i<g;i++){ac(f[i])&&h.push(I(f[i]))}return h}(c)}return undefined},clear:ad,search:function b(d){return d?function c(g,j,m,h){for(var f=[],l=0;l<g.length&&f.length<h.limit;l++){var a=ab(g[l],j,m,h);a&&f.push(a)}return f}(Q,d,G.searchStrategy,G).sort(G.sort):[]},setOptions:function N(a){(G=a||{}).fuzzy=a.fuzzy||!1,G.limit=a.limit||10,G.searchStrategy=a.fuzzy?aa:K,G.sort=a.sort||W}};function W(){return 0}var Q=[],G={};function ad(){return Q.length=0,Q}function ac(a){return Boolean(a)&&"[object Object]"===Object.prototype.toString.call(a)}function I(a){return Q.push(a),Q}function ab(c,f,g,d){for(var a in c){if(!P(c[a],d.exclude)&&g.matches(c[a],f)){return c}}}function P(c,f){for(var h=!1,d=0,a=(f=f||[]).length;d<a;d++){var g=f[d];!h&&new RegExp(c).test(g)&&(h=!0)}return h}G.fuzzy=!1,G.limit=10,G.searchStrategy=G.fuzzy?aa:K,G.sort=W;var X={compile:function V(a){return T.template.replace(T.pattern,function(c,d){var f=T.middleware(d,a[d],T.template);return void 0!==f?f:a[d]||c})},setOptions:function J(a){T.pattern=a.pattern||T.pattern,T.template=a.template||T.template,"function"==typeof a.middleware&&(T.middleware=a.middleware)}},T={};T.pattern=/\{(.*?)\}/g,T.template="",T.middleware=function(){};var F={merge:function A(a,d){var f={};for(var c in a){f[c]=a[c],"undefined"!=typeof d[c]&&(f[c]=d[c])}return f},isJSON:function x(a){try{return !!(a instanceof Object&&JSON.parse(JSON.stringify(a)))}catch(c){return !1}}};!function(p){var e={searchInput:null,resultsContainer:null,json:[],success:Function.prototype,searchResultTemplate:'<div class="menu"><a href="{url}"><i class="fa fa-user" aria-hidden="true"></i> {title}</a></div>',templateMiddleware:Function.prototype,sortMiddleware:function(){return 0},noResultsText:"<div class='menu'>Tài khoản không tồn tại!</div>",limit:10,fuzzy:!1,exclude:[]},f=["searchInput","resultsContainer","json"],d=function j(c){if(!function i(n){return !!n&&"undefined"!=typeof n.required&&n.required instanceof Array}(c)){throw new Error("-- OptionsValidator: required options missing")}if(!(this instanceof j)){return new j(c)}var a=c.required;this.getRequiredOptions=function(){return a},this.validate=function(o){var r=[];return a.forEach(function(n){"undefined"==typeof o[n]&&r.push(n)}),r}}({required:f});function g(a){e.success(a),U.put(a),function c(){e.searchInput.addEventListener("keyup",function(i){(function n(o){return -1===[13,16,20,37,38,39,40,91].indexOf(o)})(i.which)&&(m(),h(i.target.value))})}()}function m(){e.resultsContainer.innerHTML=""}function l(a){e.resultsContainer.innerHTML+=a}function h(c){(function n(i){return i&&0<i.length})(c)&&(m(),function a(i,s){var u=i.length;if(0===u){return l(e.noResultsText)}for(var o=0;o<u;o++){i[o].query=s,l(X.compile(i[o]))}}(U.search(c),c))}function q(a){throw new Error("SimpleJekyllSearch --- "+a)}p.SimpleJekyllSearch=function(a){return 0<d.validate(a).length&&q("You must specify the following required options: "+f),e=F.merge(e,a),X.setOptions({template:e.searchResultTemplate,middleware:e.templateMiddleware}),U.setOptions({fuzzy:e.fuzzy,limit:e.limit,sort:e.sortMiddleware}),F.isJSON(e.json)?g(e.json):function c(i){Z.load(i,function(n,o){n&&q("failed to get JSON ("+i+")"),g(o)})}(e.json),{search:h}}}(window)}();</script>
+<script type="text/javascript">var sjs = SimpleJekyllSearch({searchInput: document.getElementById('search-input'), resultsContainer: document.getElementById('results-container'), json: '{{current_url|split('/').0~"//"~current_url|split('/').2}}/mail/member.json'})</script>
+{% endif %}
+{# thành viên cfd #}
+{% endif %}
+{% else %}
+<div class="rmenu" style="background-color:#e9ccd2;"> Bạn chưa đăng nhập</div>
+{% endif %}
+{{block('end')}}
+{% endif %}

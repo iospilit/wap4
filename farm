@@ -1,0 +1,640 @@
+{% spaceless %}
+{% from '_functions' import login,add,get %}
+{% import '_functions' as m %} 
+{% from '_avatar' import status,timer,nangsuat,mau_nick %} 
+ {% use '_includes_forum' %}
+{% set login=login()|trim %}
+{% set url=get_uri_segments() %}
+ {% set title='Nông trại' %}
+{% set time = "now"|date('U') %}
+{% set timesangtoi = "now"|date('H', 'Asia/Ho_Chi_Minh') %}
+{% set html %}
+{% if login %}
+{% set user=get_data('user_'~login|trim)[0].data|json_decode %}
+{% set farm=get_data('farm_id_'~login|trim)[0].data|json_decode %}
+{% set id = get_get('id') %}
+{% set act = get_get('act') %}
+{# info hạt giống #}
+{% set name_hatgiong = {
+"c1":"Cà chua",
+"c2":"Cà rốt",
+"c3":"Khóm",
+"c4":"Dưa hấu",
+"c5":"Nho",
+"c6":"Hoa hồng",
+"c7":"Lúa",
+"c8":"Xoài",
+"c9":"Thanh long",
+"c10":"Hoa hướng dương",
+"c11":"Hoa tulip",
+"c31":"Khế",
+} %}
+{% set time_hatgiong = {
+"c1":4,
+"c2":6,
+"c3":10,
+"c4":8,
+"c5":26,
+"c6":2,
+"c7":48,
+"c8":24,
+"c9":12,
+"c10":12,
+"c11":6,
+} %}
+{% set sl_hatgiong = {
+"c1":45,
+"c2":60,
+"c3":105,
+"c4":80,
+"c5":240,
+"c6":25,
+"c7":720,
+"c8":360,
+"c9":189,
+"c10":189,
+"c11":60,
+} %}
+{% set gia_sl = {
+"c1":3,
+"c2":3,
+"c3":3,
+"c4":3,
+"c5":3,
+"c6":3,
+"c7":3,
+"c8":3,
+"c9":3,
+"c10":3,
+"c11":3,
+"c31":10,
+} %}
+{#{% set sl = {
+"c1":,
+"c2":,
+"c3":,
+"c4":,
+"c5":,
+"c6":,
+"c7":720,
+"c8":,
+"c9":,
+"c10":,
+"c11":,
+} %}
+#}
+{# set khế #}
+{% set sft_max_level = 13 %}
+{% set sft_time = 28800 %} {# 8 hours #}
+{% set sft_time_per_level = 600 %}
+{% set sft_level = farm.levelkhe|default('1')|trim %}
+{% set sft_time = sft_time - (sft_level - 1) * sft_time_per_level %}
+
+{% if sft_time < 7200 %} {% set sft_time = 7200 %} {% endif %}
+{% set sft_timer = farm.timekhe + sft_time >= "now"|date('U') ? farm.timekhe + sft_time - "now"|date('U') : 0 %}
+{# end set khế #}
+{% if url[1] == 'caycoi.php' %}
+{% if id >= 1 and id <=11 %}
+{% set text = get_post('text') %}
+{% if request_method()|lower == "post" %}
+{% if text|trim == text|round|trim and text|trim <= 99 and text|trim >=1 %}
+  {% set tra = (10*text|trim) %}
+  {% if get('user_'~login,'xu')|trim >= tra|trim %}
+  {% set key = 'farm_id_'~login|trim %}
+  {{add(key,'ns'~id,get(key,'ns'~id)|trim+text)}}
+  {{add('user_'~login,'xu',user.xu|trim-tra|trim)}}
+<div class="rmenu">  Mua thành công <b>{{text}}</b> hạt giống. giá {{tra|number_format}} xu. </div>
+ 
+    {% else %}
+  <div class="rmenu"> Số tiền bạn không đủ. Số tiền phải trả là {{tra|number_format}} xu</div>
+{% endif %}
+  {% else %}
+  <div class="rmenu"> Số cây mua phải từ 1 đến 99 và là số nguyên.</div>
+{% endif %}
+{% endif %}
+<div class="phdr">Mua rau củ</div>
+<div class="topmenu">
+  <font color="">{{user.nick}}</font>  bạn có {{user.xu|number_format}} xu</div>
+<div class="menu list-bottom">
+  <table cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td>
+          <img id="raucu" src="https://w.vsite.tk/assets/farm/item/i_{{id}}.png" alt="*">
+        </td>
+        <td>[ <b>{{name_hatgiong['c'~id]}}</b> ]<br>
+          Giá: <b>10</b> xu/1 cây<br>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="menu">Thời Gian Sinh truởng: [ <b>{{time_hatgiong['c'~id]}} Giờ</b> ]<br>
+Số Lượng Thu hoạch: [ <b>{{sl_hatgiong['c'~id]}}</b> cây ]<br>
+Tổng thu nhập [ <b>{{(sl_hatgiong['c'~id]*gia_sl['c'~id])|number_format}}</b> xu ]
+  <form method="post" action="">
+Số Luợng Mua 
+    <input type="text" name="text" size="4">
+    <input type="submit" name="save" value="Mua">
+</form>
+</div>
+<div class="menu">
+  « <a href="/farm/">[ <b>Nông trại</b> ]</a>
+  « <a href="/farm/shop.html">[ <b>Cửa hàng</b> ]</a>
+</div>      
+                         {% endif %}
+{% elseif url[1] == 'shop.html' %}
+{# farm shop #}
+<div class="main-xmenu">
+  <div class="phdr">Cửa hàng</div>
+  <div class="topmenu">Bạn có {{user.xu|number_format}} xu</div>
+  {% for i in 1..11 %}
+  <div class="menu">
+    <table cellpadding="0" cellspacing="0">
+      <tbody>
+        <tr>
+          <td style="width: 40px;">
+            <img id="raucu" src="https://w.vsite.tk/assets/farm/item/i_{{i}}.png" alt="*"></td>
+          <td style="width: 500px;">
+            <a href="/farm/caycoi.php?id={{i}}">[ <b>{{name_hatgiong['c'~i]}}</b> ]</a><br>
+            Thời gian: {{time_hatgiong['c'~i]}} giờ<br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  {% endfor %}
+  <div class="menu">« <a href="/farm/">[ <b>Nông trại</b> ]</a></div></div>
+{% elseif url[1] == 'nhakho.html' %}
+{# farm nhà kho #}
+ <div class="phdr">Nhà kho</div>
+{% if id %}
+{% if farm['thu_'~id] >= 1 %}
+{% if request_method()|lower == "post" and get_post('save') %}
+{% set key = 'user_'~login %}
+{{add(key,'xu',get(key,'xu')|trim+(farm['thu_'~id]*gia_sl['c'~id])) }}
+  {% set key2 = 'farm_id_'~login|trim %}
+{{m.uplist(key2,'list_kho',id)}}
+{{add(key2,'thu_'~id,'0')}}
+<div class="menu">Bán thành công!</div>
+{% else %}
+<div class="menu">
+  <table cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td style="vertical-align: top;width: 30px;">
+          <img id="raucu" src="https://w.vsite.tk/assets/farm/item/{% if id=='31' %}p_1{% else %}i_{{id}}{% endif %}.png" alt="*">
+        </td>
+        <td style="width: 500px;">[ <b>{{name_hatgiong['c'~id]}}</b> ]<br>
+          [ Số lượng: <b>{{farm['thu_'~id]}}</b> ]<br>
+[ Thu nhập: <b>{{(farm['thu_'~id]*gia_sl['c'~id])|number_format}} xu</b> ]<br>
+          <form method="post" action="">
+<input type="submit" name="save" value="Bán">
+</form>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% else %}
+ <div class="rmenu">Vật phẩm này không còn nông sản.</div> 
+{% endif %}
+{% else %}
+{% set data=farm.list_kho|split('@') %}
+ {% set total=data|length-1 %} 
+ {% if total==0 %}
+ <div class="rmenu">Kho của bạn hiện không có gì.</div> 
+{% endif %}
+{% for v in data|slice(0,total) %} 
+{% set v = v|trim %}
+<div class="menu">
+  <table cellpadding="0" cellspacing="0">
+    <tbody>
+      <tr>
+        <td style="vertical-align: top;">
+          <img src="https://w.vsite.tk/assets/farm/item/{% if v=='31' %}p_1{% else %}i_{{v}}{% endif %}.png" alt="*" class="portrait">
+        </td>
+        <td>
+          <a href="?id={{v}}">[ <b>{{name_hatgiong['c'~v]}}</b> ]</a><br>
+          Số lượng: {{farm['thu_'~v]}}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+{% endfor %}
+{% endif %}
+<div class="menu">{{ id ? '« <a href="/farm/nhakho.html">[ <b>Nhà kho</b> ]</a>':'« <a href="/farm/">[ <b>Nông trại</b> ]</a>'}}</div>
+{% elseif url[1] == 'nhabep.html' %}
+{# farm nhà bếp #}
+ <div class="phdr">Nhà Bếp</div>
+    <div class="menu">đang nâng cấp
+</div>
+{% elseif url[1] == 'bxh.php' %}
+{% include '_top_farm' %}
+{% elseif url[1] == 'thuhoachkhe.html' %}
+ {% set sft_product_per_level = 10 %}
+{% set sft_product = 40 + sft_level * sft_product_per_level %}
+
+{# farm khế #}
+  <div class="phdr"><a href="/farm">Nông trại</a> | {{act ? '<a href="thuhoachkhe.html">Cây khế</a>' : 'Cây khế' }}</div><div class="farm">
+<div class="center star_fruit_tree_2">
+  <div>
+    <img src="https://w.vsite.tk/assets/farm/star_fruit_tree{{sft_timer ? '' : '_1'}}.png" />
+  </div>
+  <span class="textbox ib bold">Cây khế Lv{{sft_level}} {{sft_level < sft_max_level and sft_timer and act != 'upgrade' ? ' - <a href="?act=upgrade">Nâng cấp</a>':''}}</strong></span></div>
+<div class="controls">
+{% if sft_timer %}
+	{% if act == 'upgrade' %}
+		{% if sft_level < sft_max_level %}
+{% set upkhe %}{% if sft_level==1 %}12000{% elseif sft_level==2 %}18000{% elseif sft_level==3 %}24000{% elseif sft_level==4 %}36000{% elseif sft_level==5 %}52000{% elseif sft_level==6 %}72000{% elseif sft_level==7 %}80000{% elseif sft_level==8 %}120000{% elseif sft_level==9 %}150000{% elseif sft_level==10 %}180000{% elseif sft_level==11 %}240000{% else %}360000{% endif %}{% endset %}
+{% if get('user_'~login|trim,'xu')|trim >= upkhe %}
+{{add('farm_id_'~login|trim,'levelkhe',sft_level+1)}}
+{{add('user_'~login|trim,'xu',get('user_'~login|trim,'xu')|trim-upkhe|trim)}}
+<div class="textbox">Bạn đã nâng cấp thành công cây khế lên cấp {{levelkhe+1}}, bạn bị tốn {{upkhe}} xu!</div>
+{% else %}
+{{add('farm_id_'~login|trim,'levelkhe',sft_level)}}
+<div class="textbox">Nâng cấp không thành công. Bạn cần tối thiểu {{upkhe}} xu để nâng cấp cây khế của bạn!</div>
+{% endif %}
+			{# nâng cấp #}
+		{% else %}
+			<div class="textbox">Cây khế đã đạt cấp tối đa!</div>
+		{% endif %}
+  {% else %}
+	<div class="textbox">Sản lượng: {{sft_product}}<br/>
+      Còn {{timer(sft_timer, 2)}} mới có thể thu hoạch</div>
+			{{sft_level < sft_max_level ? '<div class="textbox">Cây khế level càng cao phát triển càng nhanh. Khi khế đang phát triển mới có thể tiến hành nâng cấp!</div>' : ''}}
+	{% endif %}
+                                       
+{% else %}
+{% set key = 'farm_id_'~login()|trim %}
+{{m.uplist(key,'list_kho',31,'up')}}
+  {{add(key,'timekhe',time|trim)}}
+{{add(key,'thu_31',get(key,'thu_31')|trim + sft_product|trim)}}
+	<div class="textbox">Thu hoạch thành công! Bạn nhận {{sft_product}} quả khế vào kho!<br/>
+  <a href="?act=upgrade">Nâng cấp</a> cây khế để tăng sản lượng và giảm thời gian sinh trưởng!</div>
+                                         {% endif %}  
+</div></div>
+{% else %}
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+{# farm index #}
+{% set u = get_get('u') %}
+{% if u == m.user('id')|trim or not u %}
+{% set u = login|trim %}
+{% endif %}
+{% if get_data_count('user_'~u)==1 and u != 2 %}
+{% set farmU=get_data('farm_id_'~u|trim)[0].data|json_decode %}
+{% set key = 'farm_id_'~u %}
+          {% if get_data_count(key) == 0 %}
+{% set data = {'id':u,
+'sodat':6,
+'dat1':'',
+'dat2':'',
+'dat3':'',
+'dat4':'',
+'dat5':'',
+'dat6':'',
+'dat7':'',
+'dat8':'',
+'dat9':'',
+'dat10':'',
+'dat11':'',
+'dat12':'',
+'dat13':'',
+'dat14':'',
+'dat15':'',
+'dat16':'',
+'dat17':'',
+'dat18':'',
+'dat19':'',
+'dat20':'',
+'dat21':'',
+'dat22':'',
+'dat23':'',
+'dat24':'',
+'dat25':'',
+'dat26':'',
+'dat27':'',
+'dat28':'',
+'dat29':'',
+'dat30':'',
+'dat31':'',
+'dat32':'',
+'dat33':'',
+'dat34':'',
+'dat35':'',
+'dat36':'',
+'dat37':'',
+'dat38':'',
+'dat39':'',
+'dat40':'',
+'dat41':'',
+'dat42':'',
+'dat43':'',
+'dat44':'',
+'dat45':'',
+'dat46':'',
+'dat47':'',
+'dat48':'',
+'ns1':'',
+'ns2':'10',
+'ns3':'',
+'ns4':'',
+'ns5':'',
+'ns6':'',
+'ns7':'',
+'ns8':'',
+'ns9':'',
+'ns10':'',
+'ns11':'',
+'ns12':'',
+'ns13':'',
+'ns14':'',
+'ns15':'',
+'ns16':'',
+'ns17':'',
+'ns18':'',
+'ns19':'',
+'ns20':'',
+'timekhe':'now'|date('U'),
+} %}
+{% set save=save_data(key,data|json_encode) %}
+{% endif %}
+{% set muadat = get_get('muadat') %}
+{% set sadit = get_post('sadit') %}
+{% set gieohat = get_post('gieohat') %}
+{% set tuoinuoc = get_post('tuoinuoc') %}
+{% set thuhoach = get_post('thuhoach') %}
+{% set dattrong = get_post('dattrong') %}
+{% if muadat == 1 and u == login|trim %}
+{% set giadat = {
+'dat7': 10800,
+'dat8': 14700,
+'dat9': 19200,
+'dat10': 24300,
+'dat11': 30000,
+'dat12': 36300,
+'dat13': 43200,
+'dat14': 50700,
+'dat15': 58800,
+'dat16': 67500,
+'dat17': 76800,
+'dat18': 86700,
+'dat19': 97200,
+'dat20': 108300,
+'dat21': 120000,
+'dat22': 132300,
+'dat23': 145200,
+'dat24': 158700,
+'dat25': 172800,
+'dat26': 187500,
+'dat27': 202800,
+'dat28': 212300,
+'dat29': 235200,
+'dat30': 252300,
+'dat31': 270000,
+'dat32': 288300,
+'dat33': 307200,
+'dat34': 326700,
+'dat35': 364800,
+'dat36': 367500,
+'dat37': 388800,
+'dat38': 410700,
+'dat39': 433200,
+'dat40': 456300,
+'dat41': 480000,
+'dat42': 504300,
+'dat43': 529200,
+'dat44': 554700,
+'dat45': 580800,
+'dat46': 607500,
+'dat47': 634800,
+'dat48': 662700,
+} %}
+<div class="phdr">Mua Đất</div>
+ {% set datmua = (get('farm_id_'~login|trim,'sodat')|trim +1)|trim %}
+{% if datmua <= 48 %}
+{% if user.xu|trim >= giadat['dat'~datmua] %}
+  {{add('farm_id_'~login|trim,'sodat',datmua)}}
+  {{add('user_'~login|trim,'xu',user.xu|trim-giadat['dat'~datmua])}}
+{{add('user_'~login|trim,'db',user.db|trim+2)}}
+  <div class='rmenu'>Mua thành công đất số {{datmua}}.  <b>Giá: {{ giadat['dat'~datmua]|number_format }} xu</b>.</div>
+  {% else %}
+  <div class='rmenu'>Bạn không đủ lượng để mua đất số {{datmua}}.  <b>Giá: {{ giadat['dat'~datmua]|number_format }} xu</b></div>
+  {% endif %}
+{% endif %}
+<div class="menu list-top congdong">« <a href="/farm/">[ <b>Quay Lại</b> ]</a></div>
+{% else %}
+
+
+
+
+{% if request_method()|lower == "post" %}
+  {# tuoi nuoc #}
+{% if tuoinuoc %}
+{% for i in dattrong %}
+   {% set dat = farmU['dat'~i]|trim|split('_') %}
+                    {% set timetrong = dat[1] %}
+      {% set cay = dat[0]|default('0') %}
+      {% set timethu = (timetrong+(3600*time_hatgiong['c'~cay])) %}
+  {% set time = "now"|date('U') %}
+{% if dat[0] >=1 and timethu > time and timethu > (3600*time_hatgiong['c'~cay]) %}
+{{add(key,'dat'~i|trim,dat[0]|trim~'_'~dat[1]|trim~'_'~"now"|date('U'))}}
+{% endif %}
+{% endfor %}
+  {% endif %}
+{# gieo hat #}
+{% if gieohat %}
+{% if farm['ns'~sadit]|trim >= 1 and dattrong|length >= 1 %}
+{% set dem = '0' %}
+{% for i in dattrong %}
+   {% set dat = farm['dat'~i]|trim|split('_') %}
+                    {% set timetrong = dat[1] %}
+      {% set cay = dat[0]|default('0') %}
+      {% set timethu = (timetrong+(3600*time_hatgiong['c'~cay])) %}
+{% if sadit and get(key,'ns'~sadit)|trim >= loop.index and timethu <= (3600*time_hatgiong['c'~cay]) %}
+{{add(key,'dat'~i|trim,sadit|trim~'_'~"now"|date('U')~'_'~"now"|date('U'))}}
+{% set dem = dem+1 %}
+{% endif %}
+{% endfor %}
+{{add('farm_id_'~login|trim,'ns'~sadit|trim,farm['ns'~sadit]|trim-dem)}}
+{% if dem >= 1 %}
+<div class='rmenu'>Gieo thành công <b>{{dem}}</b> cây {{sadit|trim|replace({'1':'Cà chua','2':'Cà rốt','3':'Khóm','4':'Dưa hấu','5':'Nho','6':'Hoa hồng','7':'Lúa','8':'Xoài','9':'Thanh long','10':'Hoa hướng dương','11':'Hoa tulip'})}}. </div>
+{% else %}
+<div class='rmenu'> Đất bạn chọn đã được trông cầy hoặc hết hạt giống</div>
+{% endif %}
+{% endif %}
+  {% endif %}
+ {# thu hoach #} 
+  {% if thuhoach and u|trim == login|trim %}
+{% if dattrong|length >= 1 %}
+{% set dem = '0' %}
+{% for i in dattrong %}
+   {% set dat = farm['dat'~i]|trim|split('_') %}
+                  {% set timetrong = dat[1] %}
+      {% set cay = dat[0]|default('0') %}
+      {% set timethu = (timetrong+(3600*time_hatgiong['c'~cay])) %}
+  {% set sl_thu = (sl_hatgiong['c'~cay]*(nangsuat('100', timetrong, timethu, dat[2])|trim/100))|round(0,'ceil')  %}
+  {% if cay >= 1 and timethu > (3600*time_hatgiong['c'~cay]) and timethu < ("now"|date('U')) %}
+{{add(key,'dat'~i|trim,dat[0]~'_0_0')}}
+{{add(key,'thu_'~cay|trim,get(key,'thu_'~cay|trim)|trim + sl_thu|trim)}}
+{% set key2='farm_id_'~login|trim %}
+{{m.uplist(key2,'list_kho',cay,'up')}}
+{% set dem = dem+1 %}
+{% endif %}
+{% endfor %}
+{% if dem >= 1 %}
+<div class='rmenu'>Thu hoạch thành công {{dem}} cây.</div>
+{% else %}
+<div class='rmenu'> Đất bạn chọn hiện chưa có cây để thu hoạch </div>
+{% endif %}
+{% endif %}
+  {% endif %}
+  {# end #}
+{% endif %}
+{% set farm=get_data('farm_id_'~u|trim)[0].data|json_decode %}
+<style>
+.animated{-webkit-animation-duration:1s;animation-duration:1s;-webkit-animation-fill-mode:both;animation-fill-mode:both}.animated.infinite{-webkit-animation-iteration-count:infinite;animation-iteration-count:infinite}@-webkit-keyframes pulse{from{-webkit-transform:scale3d(0.5,0.5,0.5);transform:scale3d(0.5,0.5,0.5)}50%{-webkit-transform:scale3d(1,1,1);transform:scale3d(1,1,1)}to{-webkit-transform:scale3d(0.5,0.5,0.5);transform:scale3d(0.5,0.5,0.5)}}@keyframes pulse{from{-webkit-transform:scale3d(0.5,0.5,0.5);transform:scale3d(0.5,0.5,0.5)}50%{-webkit-transform:scale3d(1,1,1);transform:scale3d(1,1,1)}to{-webkit-transform:scale3d(0.5,0.5,0.5);transform:scale3d(0.5,0.5,0.5)}}.pulse{-webkit-animation-name:pulse;animation-name:pulse}.farm_bottom::after{display:block;content:'';clear:both}.farm_cote_item,.farm_pond_item{display:inline-block;position:absolute;z-index:2}.inf{background:#232125;padding:5px;line-height:14px;color:#fff;font-family:monospace;font-size:15px;margin:3px 0;word-break:break-word}
+</style>
+<div class="phdr">Nông trại</b></div>
+  <script type="text/javascript">
+function toggle(source) {
+checkboxes = document.getElementsByName('dattrong[]');
+for(var i=0, n=checkboxes.length;i<n;i++) {
+checkboxes[i].checked = source.checked;
+}
+}
+</script>
+<div id="farm" class="farm">
+<div class="farm_bg">
+{% if u != login|trim %}
+<span style="padding-top: 5px;" class="inf"><i class="fa fa-{{get('user_'~u,'sex')}}" aria-hidden="true"></i> {{mau_nick(u,get('user_'~u,'right'))}}</span>
+{% endif %}
+  <marquee behavior="scroll" direction="left" scrollamount="1" class="cloud_1">
+    <img src="https://i.imgur.com/xfyqQyS.png">
+  </marquee>
+  <marquee behavior="scroll" direction="left" scrollamount="2" class="cloud_2">
+    <img src="https://i.imgur.com/yEewgWg.png">
+  </marquee>
+  </div>
+<div class="farm_body">
+  <div class="construction">
+{% if u==login|trim %} 
+<a href="/farm/shop.html" class="to_store"></a>
+    <a href="/farm/nhakho.html" class="to_warehouse"></a> 
+{% endif %}
+    <a href="{% if u==login|trim %}/farm/thuhoachkhe.html{% else %}#caykhe{% endif %}" class="to_star_fruit_tree{{sft_timer ? '' : ' star_fruit_tree_1'}}">
+      <span class="timer" id="timer" data-timer="{{sft_timer}}"><center>Level {{get('farm_id_'~u,'levelkhe')|default('1')}}</center></span></a> 
+</div>
+<form action="?act=farm" method="post"><div class="plant_area">
+{% for i in 1..farm.sodat %}
+   {% set dat = farm['dat'~i]|trim|split('_') %}
+            {% set timetrong = dat[1] %}
+      {% set cay = dat[0] %}
+  {% set timethuhoach = (timetrong+(3600*time_hatgiong['c'~cay])) %}
+ <label class="plot"> 
+  <a href="?{% if u != login|trim %}u={{u}}&{% endif %}act=farm&id={{i}}" class="item_{{cay}}" style="background-image:url(https://w.vsite.tk/assets/farm/item/{{cay|default('0')}}_{{status(cay,timetrong,timethuhoach,dat[2])|trim}}.png)"></a>
+  <input type="checkbox" name="dattrong[]" value="{{i}}"{{id == i ? 'checked ':''}}>
+  </label>
+        {% endfor %}
+			{% if u==login|trim %}
+{{ farm.sodat < 48 ? '<label class="plot buy_plot"><a href="?muadat=1"></a></label>' : ''}}{% endif %} </div>
+{#<div style="height: 28px; background: url('http://jekyll.viwap.com/images/divide.png') repeat-x"></div>
+<div class="farm_bottom"><div class="farm_cote"></div></div>#}
+    </div>
+  </div>
+    <div class="phdr">Thao tác chăm sóc</div>
+    <div class="menu">
+      <input type="checkbox" onclick="toggle(this)">Tất cả 
+{% if u==login|trim %}
+      <select name="sadit">
+         <option value="">Chọn giống</option>
+        {% for i in 1..11 %}
+        {% set nongsan = get('farm_id_'~login|trim,'ns'~i|trim) %}
+        {% if nongsan|trim>=1 %}
+        <option value="{{i}}">{{i|trim|replace({'1':'Cà chua','2':'Cà rốt','3':'Khóm','4':'Dưa hấu','5':'Nho','6':'Hoa hòng','7':'Lúa','8':'Xoài','9':'Thanh long','10':'Hoa hướng dương','11':'Hoa tulip'})}} [{{get('farm_id_'~login|trim,'ns'~i)}}]</option>
+       {% endif %}
+        {% endfor %}
+      </select> 
+<input type="submit" name="gieohat" value="Gieo hạt"> 
+{% endif %}
+      <input type="submit" name="tuoinuoc" value="Tưới nước">
+      {% if u == login|trim %}<input type="submit" name="thuhoach" value="Thu hoạch">
+ {#     <select name="cad" disabled="disabled" >
+<option value="0" selected="selected">Không có phân bón!</option>
+</select> #}
+{% endif %}
+      </form>
+  </div>
+  			{% if id <= farm.sodat and id >= 1 %}
+   {% set dat = farmU['dat'~id]|trim|split('_') %}
+                    {% set timetrong = dat[1] %}
+      {% set cay = dat[0]|default('0') %}
+      {% set timethu = (timetrong+(3600*time_hatgiong['c'~cay])) %}
+  {% set time = "now"|date('U') %}
+				<div class="phdr">Thông tin ô đất</div>
+				{% if cay >= 1 %}
+<div class="list-login">Cây trồng: {{name_hatgiong['c'~cay]}} ({{nangsuat('100', timetrong, timethu, dat[2]) }}%)</div>
+  <div class="list-login">{{timethu > time ? 'Thời gian còn: '~timer(timethu - time)~'' : 'Có thể thu hoạch'}}</div>
+				{% else %}
+  <div class="menu">Cây trồng: Chưa có</div>
+								 {% endif %} {% endif %}
+  
+  {% endif %}
+{% else %}
+<div class="rmenu"><p><b>LỖI!</b><br>Người dùng này không tồn tại</p></div>
+  {% endif %}
+{% endif %}
+  {% endif %}
+  {% endset %}
+{{ block( 'head' ) }}
+{{html}}
+<style>
+.farm{background-image:url('https://i.imgur.com/vzlQuDM.jpg');background-repeat:repeat}
+.farm_bg{height:141px;background-image:url('https://i.imgur.com/WTL4Iyy.gif'), url('https://i.imgur.com/2CdjQwL.jpg');background-repeat:repeat-x}
+.farm_bg .cloud_1{margin-top:5px}
+.farm_bg .cloud_2{margin-top:10px}
+.farm_body {margin-top:-41px}
+.construction{text-align:left}
+.construction a{display:inline-block;background-position:bottom left;background-repeat:no-repeat;height:70px;position:relative}
+.construction a.to_store{background-image: url('https://i.imgur.com/CVXTJtK.png');width:93px;margin-right:5px}
+.construction a.to_warehouse{background-image: url('https://i.imgur.com/8uJipGY.png');width:78px;margin-right:10px}
+.construction a.to_star_fruit_tree{background-image: url('https://i.imgur.com/3os0AuK.png');width:66px}
+.construction a.to_star_fruit_tree>.timer{display:inline-block;font-size:smaller;position:absolute;width:100%;top:-10px;left:50%;margin-left:-33px;background:#fff;border-radius:5px;padding:2px;color:#000}
+.construction a.to_star_fruit_tree>.timer:before{position:absolute;bottom:-7px;left:9px;display:inline-block;border-right:7px solid transparent;border-top:7px solid #ccc;border-left:7px solid transparent;border-top-color:rgba(0,0,0,0.2);content:''}
+.construction a.to_star_fruit_tree>.timer:after{position:absolute;bottom:-6px;left:10px;display:inline-block;border-right:6px solid transparent;border-top:6px solid #ffffff;border-left:6px solid transparent;content:''}
+.construction a.to_star_fruit_tree.star_fruit_tree_1{background-image: url('https://i.imgur.com/NrtzAyJ.png')}
+.plant_area{max-width:800px;padding:5px}
+.plant_area > .plot{margin:0;padding:0;height:50px;width:25px;text-align:center;position:relative;display:inline-block;font-size:smaller}
+.plant_area > .plot > a{display:block;position:absolute;bottom:15px;width:100%;height:35px;background-repeat:no-repeat;background-position: 50% 50%;background-size:28px 32px}
+.plant_area > .plot > a.item_0{background-image: url('https://i.imgur.com/1rZOBAl.png')}
+.plant_area > .plot > input{margin:0;padding:0;position:absolute;bottom:0;left:50%;margin-left:-6px}
+.plant_area > .plot.buy_plot > a{background-image:url(https://i.imgur.com/fd1nFNE.png);bottom:10px}
+.controls{padding:5px}
+.farm_divide {height: 28px; background: url('http://jekyll.viwap.com/images/divide.png') repeat-x}
+.farm_bottom::after {display: block; content: '';clear:both;}
+.farm_cote, .farm_pond {position: relative; z-index: 0; background-repeat: no-repeat;}
+.farm_cote {float:left; width: 159px; height: 102px; background-image: url('http://jekyll.viwap.com/images/cote.png'); margin-top: -11px}
+.farm_pond {float:right; width: 99px; height: 73px; background-image: url('https://i.imgur.com/4RNa6ms.png')}
+.farm_cote_item, .farm_pond_item {display:inline-block; position: absolute;z-index: 2}
+.controls{padding:5px}
+.star_fruit_tree_2{padding:5px}
+.farm .textbox{background:#fff;padding:2px 3px;font-size:0.9em;border-radius:5px;margin-top:5px}
+.dat{background:url(https://i.imgur.com/H2WsrYk.png);padding:6px}
+/* interface d'hiver */
+</style>
+{{ block( 'end' ) }}
+{% endspaceless %}

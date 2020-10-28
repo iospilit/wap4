@@ -1,0 +1,241 @@
+{# Chú ý:
+# Cửa hàng: id.HP.money
+# Rương VP: ao.quan.canh.docamtay.khac.khuonmat.kinh.mat.matna.non.nen.thucung.toc
+#}
+{% macro ago(time_ago) %}
+{% set cur_time="now"|date('U') %}
+{% set time_elapsed = cur_time - time_ago %}
+{% set seconds = time_elapsed %}
+ {% set minutes = (time_elapsed / 60 )|round %}
+{% set hours = (time_elapsed / 3600)|round %}
+ {% set days = (time_elapsed / 86400 )|round %}
+ {% set weeks = (time_elapsed / 604800)|round %}
+ {% set months = (time_elapsed / 2600640 )|round %}
+ {% set years = (time_elapsed / 31207680 )|round %}
+{% set thu = {'Monday':'Thứ Hai','Tuesday':'Thứ Ba','Wednesday':'Thứ Tư','Thursday':'Thứ Năm','Friday':'Thứ Sáu','Saturday':'Thứ Bảy','Sunday':'Chủ Nhật'} %}
+{% set timethu = thu[time_ago|date('l','Asia/Ho_Chi_Minh')] %}
+{% set timengay = time_ago|date("d", "Asia/Ho_Chi_Minh") %}
+{% set timethang = time_ago|date("m", "Asia/Ho_Chi_Minh") %}
+{% set timenam = time_ago|date("y", "Asia/Ho_Chi_Minh") %}
+{% set timegio = time_ago|date("H:i", "Asia/Ho_Chi_Minh") %}
+{% set fulltime = time_ago|date('d.m.Y / H:i', 'Asia/Ho_Chi_Minh') %}
+{# Seconds #}
+{% if seconds >= 0 and seconds < 2 %}
+{{"vừa xong"}}
+{% elseif seconds >= 2 and seconds <= 60 %}
+{{seconds~"
+giây trước "}}
+{# Minutes #}
+{% elseif minutes <=60 %}
+   {% if minutes==1 %}
+{{"1 phút trước"}}
+   {% else %}
+{{minutes~"
+phút trước" }}
+   {% endif %}
+{# Hours #}
+{% elseif hours <=24 %}
+   {% if hours==1 %}
+{{"1 giờ trước"}}
+   {% else %}
+{{hours~"
+giờ trước"}}
+   {% endif %}
+{# Days #}
+{% elseif days <= 7 %}
+   {% if days==1 %}
+{{"Hôm qua, lúc "~timegio}}
+   {% else %}
+{{timethu}}, {{timengay}} tháng {{timethang}}, lúc {{timegio}}
+   {% endif %}
+{# Weeks #}
+{% elseif weeks <= 4.3 %}
+   {% if weeks==1 %}
+{{timethu}}, {{timengay}} tháng {{timethang}}, lúc {{timegio}}
+   {% else %}
+{{timethu}}, {{timengay}} tháng {{timethang}}, lúc {{timegio}}
+   {% endif %}
+{# Months #}
+{% elseif months <=12 %}
+   {% if months==1 %}
+{{timethu}}, {{timengay}} tháng {{timethang}}, lúc {{timegio}}
+   {% else %}
+{{timethu}}, {{timengay}} tháng {{timethang}}, lúc {{timegio}}
+   {% endif %}
+{# Years #}
+{% else %}
+   {% if years==1 %}
+{{timethu}}, {{timengay}}/{{timethang}}/{{timenam}}, lúc {{timegio}}
+   {% else %}
+{{timethu}}, {{timengay}}/{{timethang}}/{{timenam}}, lúc {{timegio}}
+   {% endif %}
+{% endif %}
+{% endmacro %}
+{% macro online(time,stt) %}
+{% import '_avatar' as avatar %}
+{% if stt %}
+{% if time < ('now'|date('U')-300) %}
+Ù uôi Tớ Ngủ Rồi ^^
+{% else %}
+Hì Tớ Đang Thức nè (๑•﹏•)
+{% endif %}
+{% else %}
+<span name="online">
+{% if time < ('now'|date('U')-300) %}
+<font color="red"><i class="fa fa-toggle-off"></i></font>
+{% else %}
+<font color="green"><i class="fa fa-toggle-on"></i></font>
+{% endif %}
+</span>
+{% endif %}
+{% endmacro %}
+{% macro page_item(trang,p,max,p,kind) %}
+    {% if max > 1 %}
+    <div class="pagination" align="center">
+ {# set p=pagination.current_page %} {% set max=pagination.pages|last #}
+{% set a='<a href="/'~trang~'=' %}
+ {% if p>max %}{% set p=max %}a{% endif %} 
+ {% if p>1 %}
+{{a|raw}}{{p-1}}{{b}}" class="page-item" id="load">&lt;&lt;</a>
+{% endif %}
+{% if p>3 %}
+{{a|raw}}1{{b}}" class="page-item" id="load">1</a>
+{% endif %}
+{% if p>4 %}
+<a class="page-item">...</a>
+{% endif %}
+{% if p>2 %}
+{{a|raw}}{{p-2}}{{b}}" class="page-item" id="load">{{p-2}}</a>
+{% endif %}
+{% if p>1 %}
+{{a|raw}}{{p-1}}{{b}}" class="page-item" id="load">{{p-1}}</a>
+{% endif %}
+{% if p==1 %}
+<span class="page-item">&lt;&lt;</span>
+<span class="page-item">{{p}}</span>
+{% elseif p==max %}
+<span class="page-item">{{p}}</span>
+<span class="page-item">&gt;&gt;</span>
+{% else %}
+<span class="page-item">{{p}}</span>
+{% endif %}
+{% if p<max-1 %}
+{{a|raw}}{{p+1}}{{b}}" class="page-item" id="load">{{p+1}}</a>
+{% endif %}
+{% if p<max-2 %}
+{{a|raw}}{{p+2}}{{b}}" class="page-item" id="load">{{p+2}}</a>
+{% endif %}
+{% if p<max-3 %}
+<a class="page-item">...</a>
+{% endif %}
+{% if p<max %}
+{{a|raw}}{{max}}{{b}}" class="page-item">{{max}}</a>
+{% endif %}
+{% if p<max %}
+{{a|raw}}{{p+1}}{{b}}" class="page-item">&gt;&gt;</a>
+{% endif %}
+</div>
+    {% endif %}
+{% endmacro %}
+{% macro sex(user) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if info.sex=='male' %}
+<i class="fa fa-mars"></i>
+{% elseif info.sex=='female' %}
+<i class="fa fa-venus"></i>
+{% else %}
+<i class="fa fa-transgender"></i>
+{% endif %}
+{% endmacro %}
+{% macro avt(user) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+http://valeric.000webhostapp.com/avatar2.php?ao={{info['avatar']|split('.')[0]|trim}}&quan={{info['avatar']|split('.')[1]|trim}}&canh={{info['avatar']|split('.')[2]|trim}}&docamtay={{info['avatar']|split('.')[3]|trim}}&khac={{info['avatar']|split('.')[4]|trim}}&khuonmat={{info['avatar']|split('.')[5]|trim}}&kinh={{info['avatar']|split('.')[6]|trim}}&mat={{info['avatar']|split('.')[7]|trim}}&matna={{info['avatar']|split('.')[8]|trim}}&non={{info['avatar']|split('.')[9]|trim}}&nen={{info['avatar']|split('.')[10]|trim}}&thucung={{info['avatar']|split('.')[11]|trim}}&toc={{info['avatar']|split('.')[12]|trim}}
+{% endmacro %}
+{% macro avtdefault(user,tipe) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if tipe!='abia' %}{% if info.avt not in ['x1','x2','x3','x4','x5','x6','x7','x8','x9','x10','x11','x12','x13','x14','x15'] and info.avt!='' %}{{info.avt|default('https://i.imgur.com/Ss9yjPu.jpg')|trim}}{% elseif info.avt=='' %}https://api.adorable.io/avatars/25/{{info.nick|slice(0,1)|trim}}.png{% else %}{#https://aotbksfden.cloudimg.io/width/70/x/#}https://valedrit.github.io/wap4/avatar/default/{{info.avt|default('x7')}}.png{% endif %}{% else %}https://valedrit.github.io/wap4/avatar/anhbia_{{info.abia|default('1')}}.jpg{% endif %}
+{% endmacro %}
+{% macro rights(l) %}
+{% if l=='9' %}<b><font color="red">Giám sát</font></b>{% elseif l=='8' %}<span class="right{{l}}s">Quản lý</span>{% elseif l=='7' %}<span class="right{{l}}s">SMod</span>{% elseif l=='6' %}<span class="right{{l}}s">Mod</span>{% elseif l=='5' %}<span class="right{{l}}s">Thần Thông Thái</span>{% elseif l=='4' %}<span class="right{{l}}s">Hot Boy</span>{% elseif l=='3' %}<span class="right{{l}}s">TMod</span>{% elseif l=='2' %}<span class="right{{l}}s">Photoshop</span>{% elseif l=='1' %}<span class="right{{l}}s">Hot Girl</span>{% else %}Thành viên{% endif %}
+{% endmacro %}
+{% macro mau_nick(user,right) %}
+{% set info = get_data('user_'~user)[0].data|json_decode %}
+{% if info['mau_nick']=='' %}
+{% if info['vip']|trim>=1 and info['vip']|trim<=22 %}<img{% if info['vip']|trim>=1 and info['vip']|trim<=20 %} class="vip{{info['vip']|trim}}"{% endif %} src="http://ourmemories.gq/wap4/mblogbb/user/uservip_level{{info['vip']|trim}}.png" {% if info['vip']|trim>=1 and info['vip']|trim<=20 %}width="50px" height=20px"{% endif %}> {% endif %}
+{% if info['pro']|trim==1 %}<img src="http://ourmemories.gq/wap4/mblogbb/user/userpro.png"> {% endif %}
+<span class="user-{{right}}">{{info.name}}</span>
+{% else %}
+{% if info['vip']|trim>=1 and info['vip']|trim<=20 %}<img{% if info['vip']|trim>=1 and info['vip']|trim<=22 %} class="vip{{info['vip']|trim}}"{% endif %} src="http://ourmemories.gq/wap4/mblogbb/user/uservip_level{{info['vip']|trim}}.png"{% if info['vip']|trim>=1 and info['vip']|trim<=20 %} width="50px" height="20px"{% endif %}> {% endif %}
+{% if info['pro']|trim==1 %}<img src="http://ourmemories.gq/wap4/mblogbb/user/userpro.png"> {% endif %}
+<b style="color:{{info['mau_nick']}}">{{info.name}}</b>
+{% endif %}
+{% endmacro %}
+
+{% macro level(all,u) %}
+{% set all = all|trim %}
+{%if (all >= 0) and (all <= 190)%} {%set level='1'%} {%elseif (all >=191) and (all <= 490)%} {%set level='2'%} {%elseif (all >= 491) and (all <= 999)%} {%set level='3'%} {%elseif (all >= 1000) and (all <= 1490)%} {%set level='4'%} {%elseif (all >= 1491) and (all <= 1999)%} {%set level='5'%} {%elseif (all >= 2000) and (all <= 2490)%} {%set level='6'%} {%elseif (all >= 2491) and (all <= 2999)%} {%set level='7'%} {%elseif (all >= 3000) and (all <= 3499)%} {%set level='8'%} {%elseif (all >= 3500) and (all <= 3999)%} {%set level='9'%} {%elseif (all >= 4000) and (all <= 4999)%} {%set level='10'%} {%elseif (all >= 5000) and (all <= 6999)%} {%set level='11'%} {%elseif (all >= 7000) and (all <= 9999)%} {%set level='12'%} {%elseif (all >= 10000) and (all <= 13999)%} {%set level='13'%} {%elseif (all >= 14000) and (all <= 17999)%} {%set level='14'%} {%elseif (all >= 18000) and (all <= 22999)%} {%set level='15'%} {%elseif (all >= 23000) and (all <= 28999)%} 
+{%set level='16'%} {%elseif (all >= 29000) and (all <= 36999)%} {%set level='17'%} {%elseif (all >= 37000) and (all <= 45999)%} {%set level='18'%} {%elseif (all >= 46000) and (all <= 55999)%} {%set level='19'%} {%elseif (all >= 56000) and (all <= 66999)%} {%set level='20'%} {%elseif (all >= 67000) and (all <= 78999)%} 
+{%set level='21'%} {%elseif (all >= 79000) and (all <= 91999)%} {%set level='22'%} {%elseif (all >= 92000) and (all <= 105999)%}{%set level='23'%}{%elseif (all >= 106000)%} {%set level='24'%} {%endif%}
+<img src="https://ourmemories.gq/wap4/mblogbb/buariu/{{level}}.gif"> {% if u!='' %}{% else %}{{all|default(0)}}{% endif %}
+{% endmacro %}
+
+ {% macro status(item,time,end_time,water_time) %}{% spaceless %}
+	{% if item %}
+		{% if time == 0 %}
+		6
+{% else %}
+{% set timeU = "now"|date('U') %}
+		{% set time_count = timeU - time %}
+		{% set water_time = timeU - water_time %}
+		{% set interval = (end_time - time) / 6 %}
+		{% set w_interval = 2 * interval %}
+		{% if timeU >= end_time %}
+			5_{{water_time > w_interval ? '1' : '0'}}
+{% elseif time_count >= interval * 5 %}
+			4_{{water_time > w_interval ? '1' : '0'}}
+		{% elseif time_count >= interval * 4 %}
+			3_{{water_time > w_interval ? '1' : '0'}}
+		{% elseif time_count >= interval * 2 %}
+			2_{{water_time > w_interval ? '1' : '0'}}
+		{% elseif time_count >= interval %}
+			1_0
+		{% else %}
+		0_0
+{% endif %}
+{% endif %}
+	{% else %}
+		0
+	{% endif %}
+{% endspaceless %}{% endmacro %} 
+  
+  {% macro timer(time, mod) %}{% spaceless %}
+	{% if time <= 0 %} {% set time = 0 %} {% endif %}
+	{% set h = (time / 3600)|round(0,'floor') %}
+	{% set m = ((time - h * 3600) / 60)|round(0,'floor') %}
+	{% set s = time-h * 3600 - m * 60 %}
+	{% if mod %}
+		{{(h ? h~' giờ' : '')~(m ? (h ? ' ':'')~m~' phút' : '')~(mod == 2 ? (s ? (h or m ? ' ':'')~s~' giây' : '') : '' )}}
+	{% else %}
+	{{h~':'~(m < 10 ? '0' : '')~m~':'~(s < 10 ? '0' : '')~s}}
+{% endif %}
+{% endspaceless %}{% endmacro %}
+                                             
+       {% macro nangsuat(ns, time, end_time, water_time) %}{% spaceless %}
+	{% if end_time == 0 %}0{% else %}
+	{% set time_1 = (end_time - time) / 3 %}
+	{% set time_2 = "now"|date('U') - water_time %}
+	{% if time_2 >= time_1 %}
+		{% set ns = ns-((100 * (time_2 - time_1) * 0.9 / time_1)|round(0,'floor')) %}
+		{% if ns < 10 %}  {% set ns = 10 %} {% endif %}
+	{% else %}
+		{% set time_2 = min("now"|date('U'), end_time) - water_time %}
+		{% set ns = ns+((100 * time_2 * 3.6 / time_1)|round(0,'ceil')) %}
+		{% if ns > 100 %}  {% set ns = 100 %} {% endif %}
+      {% endif %}
+	{{ns}}
+{% endif %}
+  {% endspaceless %}{% endmacro %}
+{% macro add(key,k,v) %}
+ {% set id=get_data(key)|last.id %}
+{{ update_data_by_id(key,id,get_data_by_id(key,id).data|json_decode|merge({(k):v})|json_encode) }}
+{% endmacro %}

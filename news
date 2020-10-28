@@ -1,0 +1,76 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% set title = 'Lưu trữ tin tức' %}
+{% set news = run['news']|default(0) %}
+{% set smile = user['smile']|trim|split('.')|length-1 %}
+{{block('head')}}
+<div class="phdr"><i class="fa fa-globe" aria-hidden="true"></i> {% if url[1]=='admin.php' and user['right'] >= '8' %}{% if get_get('edit')!='' and get_get('edit') in func.get('news')|trim|split('@')|reverse %}Chỉnh sửa tin tức{% else %}Thêm tin tức{% endif %}{% else %}Lưu trữ tin tức{% endif %}</div>
+{% if user['right'] >= '8' and not url[1] %}<div class="rmenu"><a href="/news/admin.php"><i class="fa fa-plus-circle" aria-hidden="true"></i> Thêm tin tức mới</a></div>{% endif %}
+{% set data= func.get('news')|trim|split('@')|reverse %}
+{% set total=data|length-1 %} 
+ {% set page_max=total//10 %}
+{% if total//10 != total/10 %}
+{% set page_max=total//10+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %} 
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*10-10 %}
+{% set index %}{% for i in data|slice(0,total)|slice(st,10) %}{% set view = get_data('news_id_'~i|trim)[0].data|json_decode %}<div class="list-login">
+<big>{{view['title']}}</big><br/><small><font color="gray">Bởi: {{avatar.mau_nick(view['author'],func.get('user_'~view['author'],'right'))}}, lúc: {{func.ago(view['time'])}}</font>{% if user['right'] >= '8' %}, <a href="/news/admin.php?edit={{i|trim}}"><i class="fa fa-pencil-square-o" aria-hidden="true"></i> Chỉnh sửa</a>{% endif %}</small><div class="sub"></div>{{func.bbcode(view['doc'])}}</div>{% endfor %}{% endset %}
+{% set form %}{% set token = random(100000) %}
+{% set post = get_data('news_id_'~get_get('edit'))|last.data|json_decode %}
+<div class="room"><div class="menu-room"><table width="100%" border="0"><tr><td width="80%"> <form action="" method="POST" name="form"><div><b>Tiêu đề:</b><input name="title" value="{% if get_get('edit')!='' and get_get('edit') in data %}{{post['title']}}{% endif %}"></div><div align="left"><b>Nội dung:</b></div>{% include 'toolbar' %}</div><textarea type= "text" name="msg" rows="8">{% if get_get('edit')!='' and get_get('edit') in data %}{{post['doc']}}{% endif %}</textarea>{% if get_get('edit')=='' %}<div align="center">{{captcha()|raw}}</div>{% endif %}<a class="sub3" href="/news/admin.php{% if get_get('edit')!='' and get_get('edit') in data %}?edit={{get_get('edit')}}{% endif %}"><i class="fa fa-refresh" aria-hidden="true"></i></a><button name="submit" type="submit">{% if get_get('edit')!='' and get_get('edit') in data %}Chỉnh sửa{% else %}Đăng tin tức{% endif %}</button><input type="hidden" name="token" value="{{token}}"/></form></div></td></tr></table></div></div>{% endset %}
+{% if url[1]=='admin.php' and user['right'] >= '8' %}
+{% set id_news = news|trim+1 %}
+{% set title = get_post('title') %}
+{% set doc = get_post('msg') %}
+{% if get_get('edit') in data and get_get('edit')!='' %}
+{% if request_method()|lower == "post" %} 
+{% set post = get_data('news_id_'~get_get('edit'))|last.data|json_decode %}
+{% if title|length >= 3 and title|length <= 100 and doc|length >= 50 and doc|length <= 16000 %}
+{% set key = 'news_id_'~get_get('edit') %}
+{% if post['title']!=title %}
+{{func.add(key,'title',title)}}
+{% endif %}
+{% if post['doc']!=doc %}
+{{func.add(key,'doc',doc)}}
+{% endif %}
+<div class="rmenu"><font color="green">Chỉnh sửa thành công!</font></div>
+{% endif %}
+{% endif %}
+{{form}}
+{% else %}
+{% set data = {"title":title,"doc":doc,"author":signin,"time":"now"|date("U")} %}
+{% set status = save_data_captcha('news_id_'~id_news,data|json_encode) %}
+{% if request_method()|lower == "post" %} 
+{% if status != 'CAPTCHA_ERR' and title|length >= 3 and title|length <= 100 and doc|length >= 50 and doc|length <= 16000 %}
+{{form}}
+{{func.trom_up('news',id_news,'up')}}
+{{index}}
+{% else %}
+<div class="rmenu">Đăng tin tức thất bại! Tại sao tôi lại bị như vậy?<br/>- Có thể bạn chưa xác minh Tôi không phải là người máy<br/>- Hoặc bạn nhập nội dung không đúng với giới hạn kí tự được cho phép, gồm: <b>Tiêu đề</b> (Min.3 - Max.100), <b>nội dung</b> (Min.5 - Max.16000)</div>
+{{form}}
+{% endif %}
+{% else %}
+{{form}}
+{% endif %}
+{% endif %}
+{% else %}
+{% if total >= '1' %}
+{{index|default(0)}}
+{{func.paging(url|join('/')~'?p',p,page_max)}}
+{% else %}
+<div class="rmenu">Chưa có tin tức nào!</div>
+{% endif %}
+{% endif %}
+{{block('end')}}

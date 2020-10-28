@@ -1,0 +1,255 @@
+{# word layout #}
+{% macro xepchu(doc,bot) %}
+{% from '_functions' import get,add,login,up %}
+{% import '_functions' as func %}
+{% set login = login()|trim %}
+{% set log = get('user_'~login,'nick') %}
+{% set ubot = get_data('user_'~bot)[0].data|json_decode %}
+{% set xc = ubot['xc'] %}
+{% set countdown = (ubot['xc'].time)-("now"|date("U")) %}
+{% set time_answer = 100-countdown %}
+{% set xu = 10*countdown %}
+{% set list =  {"cau1":"hoa sen","cau2":"nhà trọ","cau3":"nghỉ lễ","cau4":"nghĩa địa","cau5":"địa vị","cau6":"áo phông","cau7":"trường học","cau8":"nhà nghỉ","cau9":"siêu nhân","cau10":"biển Đông","cau11":"tờ giấy","cau12":"hôn nhân","cau13":"gia đình","cau14":"tình dục","cau15":"ngắm gái","cau16":"đẹp trai","cau17":"Thái Bình Dương","cau18":"thủ đô","cau19":"xinh đẹp","cau20":"ngôi nhà","cau21":"rau cải cúc","cau22":"thế giới ảo tình yêu thật","cau23":"thất tình","cau24":"công chúa bong bóng","cau25":"tự hào","cau26":"văn học","cau27":"hòa bình","cau28":"chiến tranh","cau29":"động vật","cau30":"chén cơm","cau31":"chè khoán","cau32":"Hoàng Văn Thụ","cau33":"lịch sử","cau34":"nhân tạo","cau35":"Võ Thị Sáu","cau36":"việt vị","cau37":"hậu môn","cau38":"phố nhỏ","cau39":"Nhật Bản","cau40":"cơ khí","cau41":"con bướm xuân","cau42":"sinh học","cau43":"học sinh","cau44":"Ngô Tất Tố","cau45":"kim loại","cau46":"phi kim","cau47":"mỏ địa chất","cau48":"con sò","cau49":"trứng gà tre","cau50":"yêu thương","cau51":"trẻ con","cau52":"con trâu","cau53":"đường nho","cau54":"đường nhựa","cau55":"nhớ nhung","cau56":"tập viết","cau57":"Nam Cao","cau58":"Xuân Diệu","cau59":"Phan Bội Châu","cau60":"cải cách","cau61":"phát triển","cau62":"Đông Nam Á","cau63":"thông minh","cau64":"sông suối"} %}
+{% set rd = random(1..64) %}
+{% set key = "cau"~rd %}
+{%set text=func.rwurl(list[key])|replace({"-":" "})%}{%set quest=""%} 
+{%for i in 0..text|length-1%} 
+{%set arr = text|split('')%} 
+{%set rand = random(text|length-1)%} 
+{%set quest= quest~arr[rand]%} 
+{%set text = (arr[:rand]|join('')~arr[(rand+1):]|join(''))%} 
+{%endfor%}
+{% set end = list[key] %}
+{% set raw_end = func.rwurl(end)|replace({"-":" "}) %}
+{% set time_start = 'now'|date('U') %}
+{% set id = get('xep_chu')|split('@')[19]|trim %}
+{% if 'xep chu @'~bot in doc|lower and xc.time < time_start or 'xếp chữ @'~bot in doc|lower and xc.time < time_start %}
+{{add('user_'~bot,'xc',{"id":xc.id|trim+1,"time":"now"|date("U")+100,"word":end,"raw_word":raw_end,"end":"no","quest":''~quest~''})}}
+{#{{add('xc_'~id,'name',bot)}}
+{{add('xc_'~id,'time','now'|date('U'))}}
+{{add('xc_'~id,'comment','Hãy sắp xếp các chữ sau thành từ hoặc cụm từ hoàn chỉnh: [b]'~quest~'[/b]')}} 
+{{up('xep_chu',id,'up')}}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}#}
+{% endif %}
+{% if xc['word'] in doc|lower and xc.time >= time_start or xc['raw_word'] in doc|lower and xc.time >= time_start %}
+{% if xc.time > time_start %}
+{{add('user_'~login,'xc',get('user_'~login,'xc')|trim+1)}}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim+xu)}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim-xu)}}
+{{add('xc_'~id,'name',bot)}}
+{{add('xc_'~id,'time','now'|date('U'))}}
+{{add('xc_'~id,'comment','Chúc mừng @'~login~' đã trả lời đúng câu hỏi vừa rồi trong '~time_answer~' giây ! Bạn nhận được [b]'~xu~'[/b] xu từ @'~bot~' !')}} 
+{{up('xep_chu',id,'up') }}
+{{add('user_'~bot,'xc',{"id":xc.id|trim,"time":"now"|date("U"),"word":xc.word,"raw_word":xc.raw_word,"end":"yes"})}}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{# rock paper scissors #}
+{% macro ott(doc,bot) %}
+{% from '_functions' import get,add,login,up %}
+{% set login = login()|trim %}
+{% set log = get('user_'~login,'nick') %}
+{% set ubot = get_data('user_'~bot)[0].data|json_decode %}
+{% set ott = ubot['ott'] %}
+{% set xu = random(50..300) %}
+{% set hp = random(5..15) %}
+{% set start = random(['bua','keo','bao']) %}
+{% set time_start = 'now'|date('U') %}
+{% set id = get('guestbook')|split('@')[19]|trim %}
+{% if 'ott @'~bot in doc|lower %}
+{% set rwdoc = func.rwurl(doc)|replace({'-':' '})|split(' ')|trim %}
+{# created #}
+{% if ott.time < time_start %}
+{{add('user_'~bot,'ott',{"id":ott.id|trim+1,"xu":xu,"player":login,"time":"now"|date("U")+180,"start":start,"end":"no"})}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' tạo kèo thành công! Kèo này trị giá '~xu~' xu!')}} 
+{{up('guestbook',id,'up')}}
+{% elseif ott.time >= time_start and login!=ott.player and ott.end=='no' %}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' từ từ nhé. Em đang chờ @'~ott.player~' bắt kèo :)) @'~ott.player~' ơi, ra chưa dzợ? Còn mỗi '~(ott.time-time_start)~' giây thôi á :( ')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% endif %}
+{% elseif 'bat @'~bot in doc|lower %}
+{# play #}
+{% if ott.time >= time_start and login==ott.player and ott.end=='no' %}
+{% if '@'~bot~' '~ott.start|replace({"keo":"bua","bao":"keo","bua":"bao"})|trim in doc|lower %}
+{{add('user_'~bot,'ott',{"id":ott.id,"xu":ott.xu,"player":ott.player,"time":"now"|date("U"),"start":ott.start,"end":"yes"})}}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim+(ott.xu))}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim-(ott.xu))}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','Bùm [b]'~ott.start~'[/b]. Huhu :menhera15: Em thua òi bùn quá @'~login~' ơi! Được ời thua keo này ta bày keo khác :moew1: @'~login~' đã nhận được '~ott.xu~' xu từ kèo này')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif ('@'~bot~' '~ott.start)|lower in doc|lower %}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','Bùm [b]'~ott.start~'[/b]. Ầy zhaa hòa rùi @'~login~' ơi. Chơi lại nào :troll9: ')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif 'apple bao' not in rwdoc or 'apple bua' not in rwdoc or 'apple keo' not in rwdoc %}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','Lew lew @'~login~' cái đồ hổng bit chơi :troll8: @'~login~' chỉ được ra [b]bua[/b], [b]keo[/b] hoặc [b]bao[/b] thui à nha :menhera17: ')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% else %}
+{{add('user_'~bot,'ott',{"id":ott.id,"xu":ott.xu,"player":ott.player,"time":"now"|date("U"),"start":ott.start,"end":"yes"})}}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim-(ott.xu))}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim+(ott.xu))}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','Bùm [b]'~ott.start~'[/b]. Ahihihi!!! Em thắng rồi nha :troll10: @'~login~' đã bị trừ '~ott.xu~' xu vào tài khoản!')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% endif %}
+
+{% endif %}
+{% endif %}
+{% endmacro %}
+
+{# Bot chat #}
+{% macro chemgio(content,user) %}{% spaceless %}
+{% set data = {"j đó| j đấy| gì đấy| gì đó":"Chè khoán đấy! Ngon đáo để :nam8: ","cắt tóc":"nhìn anh ngáo v*** [you] ạ!","xin code| xjn code":"ko làm mà đòi có ăn thì chỉ có ăn đầu b***, ăn c*** :troll74: ","call| gọi":"[you] ơi, điện thoại em hết tiền rồi :((. Anh bắn cho em 10k đi :)), đi anh ^^","bắn cc| bắn bluetooth":"Anh hem cho em thì thui, seo lại phũ với em zọ :menhera22:","đào huyệt":"để chôn [you] hả|đào đê, em ủng hộ anh","fb|messenger|msg":"học đ  lo học xài fb làm qq gì  :troll34: ","thật chứ":"tất nhiên là không  :troll18:","tán":"nó đổ rồi nhé [you] :))","đẹp trai":"Vâng, rất đẹp trai :ami1:","xinh":"Vâng, rất xinh, rất hiền và dịu dàng nữa :ami1:","chào":"Chào anh [you]  :menhera24:","ai bêđê":"Còn ai ngoài [you]  :menhera24:","là ai":"một tên gay chính hiệu :moew19:","buồn| đau tym| đau tim":"Đừng khóc, dù giờ đây anh đã mất toi tiền\r\nĐừng khóc, dù giờ đây em đã xa thật rồi\r\nEm đã nhiều lần muốn ta không xa rời\nVì đời nổi trôi, em bỏ anh lẻ loi... :ami4:","aye| anh yêu em| a iu e| anh iu em|anh thích em| a thích e":"Em là @apple và em không thích anh =))","tại sao| vì sao| lừa tình":"Tại anh ngu hơn em hay tại em thông minh hơn anh thế này? :ami15:","xin lỗi| phũ vc":"Em xin lỗi vì đã cướp mất 10 nghìn của anh. Nhưng có người sẽ cho anh lại 11 nghìn... :ami4:","em muốn khóc| anh muốn khóc| tao muốn khóc":"Vậy thôi anh xa em thôi, về nơi ta chưa bắt đầu\r\nNơi mà anh khi chưa quen em chưa hỏi xin em bắn tiền. :moew5:","làm thơ":"Kim đâm vào thịt thì đau
+Thịt đâm vào thịt nhớ nhau suốt đời|Bóng người đã khuất vào không
+Trông theo chỉ thấy cái mông là còn|Em như cục c*t trôi sông,
+Anh là con chó ngồi trông trên bờ 
+Đừng trách anh dại anh khờ,
+Cha em ngày trước cũng chờ như anh|Bướm rừng hai cánh hai râu
+Bướm nhà không cánh mà râu um tùm","wei tei":"[you] vừa quay trúng giải đặc biệt với con số 9999 :ami8: Chúc mừng bạn đã được tặng 1 triệu xu vào tài khoản :ami16:","ngu học| ngu vl":"Sông có thể cạn. Núi có thể mòn. NHƯNG Việc [you] ngu nhất BlogBB thì không gì có thể cãi được :moew15:","mẹ":"It is Maria Ozawa, the legendary ... Bitch :qoopepe15:","dady| father":"My dady is [you] :menhera23:","chịch":"Ơi, [you] động dục rồi hả :menhera16:| Goắt đu diu goăn, phúc mi rồi quỵt, hử :menhera17:| Gọi cái xê xê, đang định nhảy cầu cũng bị gọi| I..am ah... ...Ah... Ah...... h..er...e ...Á á á .... ứ .. ứ... ứ ỨỨỨỨ......","trym":"Theo kết quả nghiên cứu của các nhà khoa học trên thế giới là không nên nói bậy. Theo thông tin vừa nhận được thì ông [you] đã mất hết bộ răng của mình khi nói đến [b]trym[/b]| Có thể bạn chưa biết, trym là từ viết tắt của [b]Tao rất yêu mày[/b]","láo":"láo cái quần què [you]| mày láo đấy [you] à ò.ó","test":"test cc gì đó mày| ngài [you] đang test gì zọ :menhera24:","dthw| dễ thương| dễ thg| ciute| cute| kute":"dạ :menhera7:| I..am ah... ...Ah... Ah...... h..er...e ...Á á á .... ứ .. ứ... ứ ỨỨỨỨ......","ny| người yêu| crs| crush":"Em làm gì đã có người yêu, em còn đang muốn ế đây này :))","muốn ế| ế cmnr| thoát ế":"Ế! Ế nữa! Ế mãi...!","ngắm":":qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/YCuNcY5.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/5tV27S5.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/gst6L3b.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/pPqqajE.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/VtA6nFz.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/BIEntHP.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/CtyQKjs.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/fzFeMKC.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/fzFeMKC.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/yrJoktW.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Rum0D2R.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/IW5AjEU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/yrJoktW.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Rum0D2R.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/IW5AjEU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/UBYzzuq.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/qzLUvTk.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/fmSXHoy.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/tExe6fv.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/704rnq8.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wbKD0ur.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Tdo7YSZ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ut7neGr.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/WTUYT3M.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/O5cqbFT.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/18wCOKU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/W8e31qM.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/pNMP4Qx.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/cpoHIl4.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/06AvBZg.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wVCmNcm.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/4DAA3dr.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/CkJ1Hqr.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/QsnYRPg.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/QvGoLq0.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wBixhCe.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/MWlzHy4.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/5LXShlU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/WRmnWFt.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/iGhJgB7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/m2m8CqW.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/OWtVgUI.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ODIOQRP.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/yARxwsL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/1IjbUIu.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/HUtajnc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/QTtLhtD.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Fn95gw7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/cl2pHye.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/55plldJ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/5LI29fQ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/mBcgDBQ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/9DhBHso.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/7YvYXnr.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/mEGMQMm.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/tWCRfOI.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/asGoWvF.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/1rJUlas.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/vKmNdiZ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/t16tJH7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Pe2lNGF.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/zXPPnta.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/tjCEg3r.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/GbWVxYQ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/sfTdHXY.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/qwYoVPL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/7p1grGt.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Fbehiv9.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Z1n44ER.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/kmc1WdE.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Hz3uhYP.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Jg6aFyO.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/rHrtbgu.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/9vtI77w.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/G9bVuRj.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/2VcEM9L.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/nlSXDp2.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/AeEekoq.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/U4d92Lf.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/PskEIWc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/DcTyt93.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/v9FQuXy.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Kr9xhxl.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/zXPvUP2.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/4DPvvyC.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Def2TiV.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/1UhnA4Z.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/aSIObpr.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/AxvPYvq.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/rrtSpNi.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ISccx79.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/QnE0Kfs.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/J5zEQTG.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wK84Rct.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/gaukAuU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/EkOayHi.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/rP8T6ma.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LXRiowR.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/pudTKI6.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/JeWVRIS.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/IwjYEvO.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/CCj6WB7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Y27t3Mt.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/a0M5NNX.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/kQWmczc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/EkOayHi.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/rP8T6ma.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LXRiowR.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/pudTKI6.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/JeWVRIS.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/IwjYEvO.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/CCj6WB7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/Y27t3Mt.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/a0M5NNX.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/kQWmczc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LKe18Su.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/aee6i3v.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/c0534lu.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/jhoq7gL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/GuJdMqb.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/PU5hPX3.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/uJJgfps.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/lV1hB78.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/fnv3llc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/S5Oo4xK.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/AiX1g5l.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/HTOQrJ3.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ineNHQn.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/4xTORiG.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/2Eh2a83.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/KAUaClF.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/h6qkUHU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/mGfz8OE.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/7PB1hra.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/mQUQ5m1.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/f0RPH80.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/caKTtXw.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/PDsdBGw.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/b3vNXnl.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/R2BnE1p.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/3wjnSue.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LFTzm15.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/fWPaF92.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/n6P8EOH.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/pq608B4.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/63tzHGL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/41NcCuY.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wOORYmz.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/rLXxZsA.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/1Q81XMX.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/UMoIjFW.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/vMmg8FE.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/zZqHhBt.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/k0eSS0e.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/MFC85NU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/doWv9vB.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wEuitT8.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/am5u7Fp.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/wMUQ0Ju.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/XR5O4NC.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/5SGXFU7.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/My2utJX.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/zuIfwMc.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/hb1DNyy.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/2B5TQeV.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/0VNUhJG.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/L0EIBv3.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/qahOL9C.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/C2ZRKZL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LupPrXG.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/eMwBz5A.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/CKCI1Xz.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ia5ZkZ8.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/nyVxO4s.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/MCehxYB.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/3HtyUPs.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/QAw9vxS.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/ZrUV1fJ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/NgI19NU.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/KXresGb.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/BLlkE5B.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/VBMV5jl.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/MSBvCt5.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/R1800mx.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/vtQKGSe.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/x7G2jud.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/7zHcss9.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/mOZigce.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/U0zR6QP.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/LVHWPF5.png[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/MbGN4ui.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/r9PntSL.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/0zC4btI.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/WIkC8u4.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/77IrqIY.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/IPs5hYy.png[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/69GIvht.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/FAWRxoI.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/jlffSTn.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/0b9Zwyi.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/uYJeyfJ.jpg[/imgg]|:qoopepe17::qoopepe17::qoopepe17:[imgg]https://i.imgur.com/JpLmqsC.jpg[/imgg]"} %}
+{% for bot,you in data %} 
+{% set rbot=bot|trim|split('|') %} 
+{% set ryou=you|trim|split('|') %} 
+ 
+{% for bbot in rbot %} 
+{% if bbot|trim|lower in content|trim|lower %}
+{% from '_functions' import get,add,up %}
+{% set id = get('guestbook')|split('@')[19]|trim %}
+{% set traloi %}{{random(ryou)|replace({ ('[you]'): ('@'~user~'')})}}{% endset %}
+{% set comment = {"name":'apple',"time":"now"|date('U'), "comment":" "~traloi} %}
+{{add('chat_'~id,'name','apple')}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment',' '~traloi)}} 
+{{up('guestbook',id,'up') }}
+{{add('user_apple','postguest',get('user_apple','postguest')|trim+1)}}
+{% endif %} 
+{% endfor %} 
+{% endfor %}
+{% endspaceless %}{% endmacro %}
+
+
+{# Bot thầy phán #}
+{% macro thayphan(content,user,entry) %}{% spaceless %}
+{% set data = {"xem":"Con bốc được lá [b][red]2♥[/b][/red] Để thầy xem...[c]Uhmm, một quân bài rất tốt. Nó báo hiệu rằng con sẽ được người yêu hoặc một người mến mộ ủng hộ và giúp đỡ. Thế nên là an tâm con nhá, có khó khăn gì thì người ấy cũng thông cảm và giúp con mà[/c]| Con bốc được lá [b][red]2♦[/b][/red] Để thầy xem...[c]Hmm, quân này nó có khá nhiều ý nghĩa đấy. Có thể là điềm báo về đối tác làm ăn, cũng có khi là thay đổi trong quan hệ. Thầy nghĩ con nên nói chuyện với bạn bè và đồng nghiệp để hiểu rõ hơn chuyện gì đang xảy ra con ạ.[/c]| Con bốc được lá [b][red]2♣[/b][/red] Để thầy xem...[c]Hmm, quân này báo hiệu trở ngại con ạ. Con sẽ có vài khó khăn trước khi thành công, và phải đề phòng có kẻ tung tin đồn xấu xa. Thầy nghĩ là con phải kín đáo hơn, làm mọi việc một cách cẩn thận và chu đáo.[/c]| Con bốc được lá [b][red]2♠[/b][/red] Để thầy xem...[c]Chậc…. Quân này nó ứng với dối lừa, đổ vỡ quan hệ. Sắp tới con có thể sẽ phải tạm dừng một việc quan trọng, một mối quan hệ quan trọng nào đó. Điều đó có thể làm con buồn nhưng là nó cần thiết. Nếu con đang băn khoăn về một mối tình, thì quân này nó là điềm báo con sắp phải chia ly hoặc người ấy làm con thất vọng. Thầy nghĩ con nên thu xếp để được nghỉ ngơi và thư giãn một thời gian, rồi con sẽ ổn.[/c]| Con bốc được lá [b][red]3♥[/b][/red] Để thầy xem...[c]Chà, quân này à, khó đây. Nó thường báo hiệu chuyện tình tay ba con ạ. Con sẽ thấy khó chọn lựa tình yêu đích thực của mình. Tình cảm không gượng ép được, thế nên con hãy thư giãn và để cho chuyện gì đến sẽ đến.[/c]| Con bốc được lá [b][red]3♦[/b][/red] Để thầy xem...[c]Chà… Quân này nó liên quan đến pháp luật con ạ. Thời gian này thì con phải cẩn thận, tránh cãi vã, xung đột nhé. Nếu con cư xử khéo léo, biết trước biết sau thì thầy nghĩ cũng sẽ không có vấn đề gì đâu..[/c]| Con bốc được lá [b][red]3♣[/b][/red] Để thầy xem...[c]Oh, một quân bài báo hiệu tình yêu và hạnh phúc. Nếu con muốn cầu hôn ai thì đây là thời điểm thích hợp đấy. Ngoài ra, nó còn mang ý nghĩa là cơ hội thứ hai nữa. Vậy nên nếu có việc gì trước đây chưa thành, mà con muốn thử lại thì hãy tiến lên nhé.[/c]| Con bốc được lá [b][red]3♠[/b][/red] Để thầy xem...[c]Uhmm, quân này không được tốt, nó tượng trưng cho quan hệ đổ vỡ con ạ. Thầy nghĩ là có thể có đứa định chen ngang vào mối quan hệ của con. Trong thời gian này con nên cẩn thận, tránh va chạm hay cãi cọ làm đổ vỡ tỉnh cảm.[/c]| Con bốc được lá [b][red]4♥[/b][/red] Để thầy xem...[c]Hmmm, quân này báo hiệu thay đổi trong công tác, nhà cửa con ạ. Có thể sắp tới con sẽ có thuyên chuyển nơi công tác hoặc là chuyển nhà. Thầy nghĩ là con cứ nên dự tính trước không nó lại cập rập.. [/c]| Con bốc được lá [b][red]4♦[/b][/red] Để thầy xem...[c]Ấy, quân bài tốt con ạ, nó báo điềm tài chính con sắp phất đến nơi rồi. Theo thầy tính thì con thấy ưng vụ làm ăn nào là chiến luôn con ạ. Thêm nữa là con sẽ nhận được lời khuyên tốt từ người một người đứng tuổi. Nếu con chú ý lắng nghe thì sẽ rất có lợi đấy.[/c]| Con bốc được lá [b][red]4♣[/b][/red] Để thầy xem...[c]Đây là một quân bài cảnh báo. Theo thầy tính thì thời gian này con phải cẩn thận không có đứa gian dối, phản bội đấy. Nếu con mà kí cọt gì cũng phải đọc lại, không chủ quan nghe chưa. Chúc con may mắn![/c]| Con bốc được lá [b][red]4♠[/b][/red] Để thầy xem...[c]Con à, quân này nó hay đi liền với cả muộn phiền, rắc rối. Thầy nghĩ con nên cẩn thận trong chi tiêu, với cả đề phòng mất của. Nói chung thì cũng không có gì nguy hiểm lắm, con cứ an tâm đừng lo nghĩ nhiều, mấy hôm nữa vận chuyển sao dời mọi thứ sẽ đâu vào đấy thôi.[/c]| Con bốc được lá [b][red]5♥[/b][/red] Để thầy xem...[c]Hmmm, quân này báo con biết là có đứa đang ghen với con đấy. Cũng phải, người đáng yêu thì bao giờ chả có đứa ghen tức hả con. Thầy nghĩ là con cứ đề phòng một tí, cũng chả hại gì.[/c]| Con bốc được lá [b][red]5♦[/b][/red] Để thầy xem...[c]À, quân bài báo hiệu thành công và hạnh phúc đấy con ạ. Theo thầy tính thì sắp tới con sẽ có vài thay đổi theo hướng tốt. Thầy nghĩ là thời gian này rất thích hợp để có em bé hoặc là làm dự án mới.[/c]| Con bốc được lá [b][red]5♣[/b][/red] Để thầy xem...[c]Quân này báo điềm lành con ạ. Sắp tới con sẽ có nhiều bạn mới, nhiều người giúp đõ, nhiều bằng hữu tốt bụng. Thầy tính thì con nên bỏ nhiều thời gian giao lưu bạn bè, mở rộng quan hệ và thiết chặt tình bạn cũ. Điều đó sẽ làm con vui vẻ và thoải mái.[/c]| Con bốc được lá [b][red]5♠[/b][/red] Để thầy xem...[c]À, con này cũng khá được con ạ. Theo thầy nghĩ thì con hơi bi quan với tình hình thôi. Chuyên đâu nó có đấy, khó khăn bây giờ chỉ là tạm thời thôi con ạ. Con cứ lạc quan mà vui sống nhé![/c]| Con bốc được lá [b][red]6♥[/b][/red] Để thầy xem...[c]Ái chà, quân này báo hiệu may mắn con ạ. May mắn này tiếp may mắn kia. Có người muốn chăm sóc cho con. Có người yêu mến con. Con sẽ thấy ấm áp và tràn đầy hạnh phúc. Mỗi tội là con đừng nên đánh bạc lúc này, đỏ tình thì đen bạc mà.[/c]| Con bốc được lá [b][red]6♦[/b][/red] Để thầy xem...[c]Uhmm… quân này à, báo điềm trục trặc, cãi vã, chia ly con ạ. Thời gian này chuyện tình cảm dễ xảy ra mâu thuẫn, thế nên thầy nghĩ là con cứ phải bình tĩnh, điềm đạm vào. Có chuyện gì xảy ra cũng đừng nổi giận mà tổn hại sức khỏe, nhan sắc nhé.[/c]| Con bốc được lá [b][red]6♣[/b][/red] Để thầy xem...[c]Hmm, quân này nó báo rằng con sắp có thành công trong tài chính. Thầy tính thì con sắp được ai đó cho tiền, tài trợ hoặc giúp đỡ tài chính rồi. Cố gắng làm việc và học hành chăm chỉ nhé![/c]| Con bốc được lá [b][red]6♠[/b][/red] Để thầy xem...[c]Uhmm... thầy nghĩ là sắp tới con có vài thay đổi nhỏ mang tính tích cực. Tuy nhiên cũng không lớn lắm con ạ. Thầy tính sắp tới mọi chuyện sẽ ổn định và an lành, con an tâm nhé![/c]| Con bốc được lá [b][red]7♥[/b][/red] Để thầy xem...[c]Chậc, quân này tượng trưng cho người không chung thủy, tình cảm hay thay đổi. Có thể sắp tới con sẽ thấy hơi bị 'thất tình' một tí, nhớ nhung người ta nhiều một tí mà nhận lại chả được bao nhiêu... Nhưng không sao, bôi cao sẽ khỏi, thầy nghĩ là chuyện đó qua cũng nhanh thôi con ạ. Lúc này tâm trạng người ta cũng không ổn định, nhưng rồi dần dà thì tỉnh cảm cũng sẽ chắc chắn hơn...[/c]| Con bốc được lá [b][red]7♦[/b][/red] Để thầy xem...[c]Chậc chậc…. Quân này nó báo điềm là sắp tới con sẽ phải cãi nhau về chuyện tiền bạc hoặc công việc. Thầy nghĩ là con nên chuẩn bị trước tinh thần với cả lý lẽ một chút. Thường là chuyện này cũng sẽ êm thắm đâu ra đấy thôi con ạ, không cần lo lắng lắm đâu.[/c]| Con bốc được lá [b][red]7♣[/b][/red] Để thầy xem...[c]Ấy, quân này báo hiệu công việc làm ăn, học hành thuận lợi con ạ. Thầy tính là chẳng mấy chốc mà con sẽ thăng chức hoặc tăng lương. Tuy nhiên con có thể có vài rắc rối nho nhỏ với người khác giới.[/c]| Con bốc được lá [b][red]7♠[/b][/red] Để thầy xem...[c]Chà chà, để thầy nghĩ đã... Con bảy bích này nó là điềm báo rằng con sắp có chút khó khăn. Có thể là con không nghe lời người khác khuyên nên mất đi cơ hội. Khó khăn xảy ra cũng chỉ do con chuốc lấy thôi. Thế nên thầy nghĩ chỉ cần cẩn thận và chịu lắng nghe thì sẽ ổn con ạ.[/c]| Con bốc được lá [b][red]8♥[/b][/red] Để thầy xem...[c]Hehe, quân này báo rằng con sắp được tặng quà hoặc được r đi chơi. Vui lên con nhá, thầy nghĩ là con sắm sửa quần áo, chỉnh trang đầu tóc đi, sắp được đi chơi rồi mà.[/c]| Con bốc được lá [b][red]8♦[/b][/red] Để thầy xem...[c]Uhmm… Quân này nó là điềm báo thay đổi trong công việc con ạ. Có thể là con sẽ tìm thấy một công việc mới, hoặc là tình hình công việc bây giờ sẽ khác. Nếu con đi du lịch hay công tác trong thời gian này thì rất có thể sẽ tìm thấy một người khác giới hấp dẫn. Nói chung thầy nghĩ là con sẽ thấy một vài thay đổi nho nhỏ và dễ chịu đấy.[/c]| Con bốc được lá [b][red]8♣[/b][/red] Để thầy xem...[c]Chà, quân này không được tốt con ạ. Con phải cẩn thận có kẻ ghen ghét trong công việc. Công việc của con có thể sẽ không được thuận lợi lắm, nhưng đừng lo lắng quá vì chỉ cần con tỉnh táo thì sẽ ổn.[/c]| Con bốc được lá [b][red]8♠[/b][/red] Để thầy xem...[c]Chẹc, tám bích à, để thầy nghĩ... Con này nó nghĩa là sự tham lam, không may, nguy hiểm, buồn rầu. Nếu con đang suy tính chuyện gì thì cũng nên ghi nhớ mình phải cẩn thận hơn nha. Thầy nghĩ là có gì cản trở thì cũng sẽ qua, miễn là con suy nghĩ thấu đáo và chấp nhận khó khăn.[/c]| Con bốc được lá [b][red]9♥[/b][/red] Để thầy xem...[c]Quân bài của mơ mộng, ước mong, niềm hy vọng. Gặp quân 9 cơ là điềm báo ước mơ thành hiện thực con ạ. Thầy tính rồi, con chỉ cần cố gắng hết sức rồi chuyện gì cũng sẽ đạt được. Ước mong đau đáu trong lòng, Chỉ cần tiến tới thì không sợ gì.[/c]| Con bốc được lá [b][red]9♦[/b][/red] Để thầy xem...[c]Để thầy xem... Quân này nó mang điềm báo là con sắp có thương vụ mới, có thể sẽ phải đi công tác xa nhà. Thời gian này chắc con sẽ khá bận rộn, luôn chân luôn tay và có thể phải chuyển nơi ở một thời gian.[/c]| Con bốc được lá [b][red]9♣ [/b][/red]Để thầy xem...[c]Uhmm, quân này mang điềm báo thành công. Nếu mà con chưa kết hôn thì thầy nghĩ rất có thể là con sắp cưới con nhà đại gia con ạ, không thì người yêu con cũng sắp trúng số lớn đấy. Ngoài ra thì nó cũng báo rằng con sắp gặp của trời cho, tiền bạc từ đâu rơi xuống.[/c]| Con bốc được lá [b][red]9♠ [/b][/red]Để thầy xem...[c]Uhmm, chín bích không phải là quân bài tốt lành cho lắm con ạ. Thời điểm này có thể nói là vận hạn của con đang đến, thế nên thầy khuyên con nên giữ gìn sức khỏe, cẩn thận đường xá, không tiêu nhiều tiền. Rồi mấy hôm nữa điềm dữ nó bơn bớt đi thì con sẽ lại vô tư thôi con ạ. Thầy chúc con may mắn nhiều hơn.[/c]| Con bốc được lá [b][red]10♥ [/b][/red]Để thầy xem...[c]Ấy, quân bài này tượng trưng cho may mắn và thành công con ạ. Gặp quân 10 cơ thì đích thị là hoạn nạn sẽ vượt qua, phong ba là con muỗi. Nếu vừa gặp khó khăn việc gì thì con cứ yên tâm là sẽ ổn. Làm ăn, học hành, công danh sự nghiệp sẽ tấn tới. Mười cơ là dấu điềm lành, Khó khăn đến mấy cũng giành vẻ vang. Dẫu cho cơ sự tan tành, Vượt lên phút chốc trở thành đại gia.[/c]| Con bốc được lá [b][red]10♦ [/b][/red]Để thầy xem...[c]À, quân bài tốt đây. Chất rô vốn tượng trưng cho tiền tài danh vọng, điểm mười thường báo tin tốt đẹp. Gặp quân này thì thầy nghĩ là con sắp có thay đổi chuyện tiền bạc, thường là tốt con ạ. Theo thầy tính thì túi tiền rủng rỉnh đến nơi rồi. Nhớ chăm chỉ làm ăn và tính toán chi tiêu một chút nhé, cơ hội đang đến đấy.[/c]| Con bốc được lá [b][red]10♣[/b][/red] Để thầy xem...[c]Quân bài tốt con ạ. Báo hiệu làm ăn may mắn thành đạt. Nếu con đi du lịch hay làm ăn xa nhà bây giờ thì rất có thể sẽ gặp được bạn mới, nếu chưa có người yêu thì có khi tìm được người yêu đấy.[/c]| Con bốc được lá [b][red]10♠[/b][/red] Để thầy xem...[c]Chẹp, con mười bích này không được tốt lắm con ạ. Con có điều ưu tư, có thể sẽ nhận được tin không tốt lắm. Thầy nghĩ là thời gian này con nên nghỉ ngơi, thư giãn, đừng quá lo lắng rồi sẽ ổn thôi con ạ.[/c]| Con bốc được lá [b][red]A♥[/b][/red] Để thầy xem...[c]Quân này nó báo điềm lành về tình yêu đó con. Vốn dĩ nó là tượng trưng cho gia đình mới cả thư tình. Bắt được quân này thì kiểu gì thì rắc rối muộn phiền cũng đều tan biến, tin vui tới tấp đưa về con ạ. Nếu mà chưa có ai yêu, gặp ngay người ấy buổi chiều hôm sau. Nếu mà tình ái u sầu, việc may sẽ đến rơi đầu con ngay.[/c]| Con bốc được lá [b][red]A♦[/b][/red] Để thầy xem...[c]À, quân này thường báo tin tốt con ạ. Nó tượng trung cho sự thay đổi, một thông điệp tốt, thường là về tiền bạc. Thầy tính thì có thể con sắp được tăng lương đấy. Cứ cố gắng học hành làm việc chăm chỉ nhé, rồi con sẽ nhận được tin vui sớm thôi.[/c]| Con bốc được lá [b][red]A♣[/b][/red] Để thầy xem...[c]Ái chà, con này hên lắm con ạ. Bốc được quân này thầy nghĩ con nên đánh xổ số đi. Nó báo hiệu giàu sang, quyền quý, của cải kiếm được bất ngờ. Nhưng mà cùng phải nhớ, cái gì đến nhanh thì có thể đi cũng nhanh lắm, con phải biết tiêu pha cẩn thận đấy.[/c]| Con bốc được lá [b][red]A♠[/b][/red] Để thầy xem...[c]Chậc, quân này xui lắm con ạ. Thời gian này, con phải đề phòng vấn đề sức khỏe của bản thân, gia đình và người thân. Chuyện làm ăn, học hành cũng nên cẩn trọng. Nói chung không nên đi đâu xa. Cần phải chú ý mọi lúc mọi nơi từ khi đi đường đến khi lên giường con ạ.[/c]| Con bốc được lá [b][red]J♥[/b][/red] Để thầy xem...[c]Quân bài mang hình người bạn tốt, đôi khi ám chỉ một người mến mộ trẻ tuổi. Gặp quân bài này, thầy nghĩ con sắp gặp được một người có tính cách rất hay ho, vui tính và thân thiện. Người này có vẻ mến mộ con. Nếu con là nữ giới đang muốn có người yêu, rất có thể đây là cơ hội tốt. Nếu là nam giới, con sắp gặp một người bạn chơi được. Người ái mộ trẻ tuổi, Mang bông hồng và cả trái tim, Gặp con một ngày không đợi, Là tri kỉ và có thể tình yêu.[/c]| Con bốc được lá [b][red]J♦[/b][/red] Để thầy xem...[c]Để thầy coi... J Rô à, một chàng trai trẻ chỉnh tề nhưng cũng có thể là một con người đố kỵ không đáng tin tưởng. Thầy tính thì con sắp có người báo tin không được tốt lành, nhưng mà cũng không có gì quan trọng to tát lắm. Con nên tỉnh táo khi nghe lời người khác vào thời gian này nhé.[/c]| Con bốc được lá [b][red]J♣[/b][/red] Để thầy xem...[c]J nhép, một người bạn ngang tuổi tính tình sốc nổi nhưng vui vẻ và tốt bụng. Thầy tính là con sắp có dịp đi chơi vui vẻ rồi, nếu chưa có người yêu thì đây cũng là cơ hội tốt đấy.[/c]| Con bốc được lá [b][red]J♠[/b][/red] Để thầy xem...[c]Quân bài mang hình tượng của một kẻ thù địch và hay ghen tị. Thầy nghĩ là thời gian này con nên cảnh giác hơn trong chuyện tiền nong cũng như tình cảm, đề phòng những kẻ tiểu nhân ghen ghét, thù địch.[/c]| Con bốc được lá [b][red]K♥[/b][/red] Để thầy xem...[c]A, quân này nó mang hình ông già tốt bụng, nghĩa hiệp, thông thái, hiểu biết. Gặp quân bài này báo điềm lành rằng con có quý nhân phù trợ, giúp đỡ con ngay cả khi con chưa cần nhờ vả gì. Chờ tin tốt nha con! Ông già mang đến tin vui, khó khăn giúp đỡ vận xui sẻ cùng. Dẫu khó khăn đến muôn trùng, có ông gìa béo đỡ cùng với con.[/c]| Con bốc được lá [b][red]K♦[/b][/red] Để thầy xem...[c]Uhmm, thầy xem nào…. Quân này nó mang hình một người đàn ông thống trị quyền lực của Đất, một người đầy quyền lực, địa vị và ảnh hưởng. Bốc được quân bài này, con sẽ sớm có tin tốt lành, thường là được thăng chức con ạ. Thời gian này con nên đối tốt với các sếp trên cũng như đồng nghiệp, sẽ dễ có cơ hội lắm đấy.[/c]| Con bốc được lá [b][red]K♣[/b][/red] Để thầy xem...[c]Oh, quân này mang hình một ông già tốt bụng, hào sảng, nhiệt tình. Con sẽ gặp được giúp đỡ từ cấp trên, thầy cô, bố mẹ hay họ hàng chú bác đấy. Thầy nghĩ có thể là con sắp được việc làm mới có lương cao hơn, thăng chức hay người khác cho tiền.[/c]| Con bốc được lá [b][red]K♠[/b][/red] Để thầy xem...[c]Uhm, thầy xem nào.... Quân bài này tượng trưng cho người giàu tham vọng và có thể ích kỷ. Nó là điềm báo cho con biết phải đề phòng kẻ tiểu nhân tránh sự ghen ghét, bon chen. Con nên nhường nhịn chuyện nhỏ, nhưng đừng để ai động đến quyền lợi của mình.[/c]| Con bốc được lá [b][red]Q♥[/b][/red] Để thầy xem...[c]Quân này nó mang hình người đàn bà hiền lành, tốt bụng đó con ạ. Thầy nghĩ là con sắp nhận được những lời khuyên tốt từ một người phụ nữ ấm áp và tình cảm. Đôi lúc thì con bài này ám chỉ hình mẫu của người mẹ, người chị hoặc người bạn tâm giao nữ giới. Gặp người phụ nữ tốt tâm, lắng nghe lời nói sẽ làm con vui. Nếu mà đang gặp chuyện xui, có người phụ nữ biến xui hóa lành. P/s: Nghe thầy nói này, nếu mà con đang muốn cưa ai ý, thì phải cưa mẹ, chị gái, em gái hay bạn gái thân của người ta trước nghe không, sẽ lợi đủ đường đấy con ạ.[/c]| Con bốc được lá [b][red]Q♦[/b][/red] Để thầy xem...[c]À, quân này nó mang hình một người phụ nữ thống trị quyền lực của Đất, mang ý nghĩa là có chuyện đang xảy ra con ạ. Tin đồn thì hay thất thiệt, nhưng mà cũng phải nói rằng có lửa thì mới có khói. Thầy nghĩ là con nên trò chuyện nhiều hơn với bạn bè, đồng nghiệp mà biết người ta đang bàn tán cái gì, sẽ có lợi cho con.[/c]| Con bốc được lá [b][red]Q♣[/b][/red] Để thầy xem...[c]Oh, quân này mang hình một phụ nữ tốt bụng, nhiệt tình và cởi mở. Con sẽ gặp được giúp đỡ từ một người phụ nữ đấy. Thầy nghĩ có thể là con sẽ nhận được một lời khuyên bổ ích từ người ấy, nhớ lắng nghe con nhé.[/c]| Con bốc được lá [b][red]Q♠[/b][/red] Để thầy xem...[c]Quân bài tượng trưng cho một góa phụ áo đen. Một quân bài nguy hiểm. Con phải tránh bẫy tình và đề phòng những kẻ chen ngang. Trong chuyện tình cảm, cần phải mềm mỏng nhưng tỉnh táo. Trong công việc, con phải sáng suốt không quyết định theo tình cảm riêng.[/c]| Con bốc được lá [b][red]JOKER[/b][/red] Để thầy xem...[c]Phăng teo. Quân bài của số mệnh. Nó không phải là một điềm gở cũng như điềm lành con ạ. Ý nghĩa của nó là chuyện gì đến sẽ đến, nếu con mong chờ một điều gì đó thì cũng không phải sổt ruột. Thầy nghĩ là con hãy để mọi thứ tự nhiên, đừng gượng ép.[/c]"} %}
+{% for thayphan,you in data %} 
+{% set rthayphan=thayphan|trim|split('|') %} 
+{% set ryou=you|trim|split('|') %}
+
+{% for tphan in rthayphan %} 
+{% if tphan|trim|lower in content|trim|lower %}
+{% from '_functions' import get,add,up %}
+{% set id = get('guestbook')|split('@')[19]|trim %}
+{% set traloi %}{{random(ryou)|replace({ ('[you]'): ('@'~user~'')})}}{% endset %}
+{% set comment = {"name":'apple',"time":"now"|date('U'), "comment":" "~traloi} %}
+{{add('chat_'~id,'name','apple')}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment',' '~traloi)}} 
+{{up('guestbook',id,'up') }}
+{{add('user_apple','postguest',get('user_apple','postguest')|trim+1)}}
+{% endif %} 
+{% endfor %} 
+{% endfor %}
+{% endspaceless %}{% endmacro %}
+
+{# dial and steal #}
+{% macro minigame(doc,bot) %}
+{% from '_functions' import get,add,login,up %}
+{% set login = login()|trim %}
+{% set log = get('user_'~login,'nick') %}
+{% set ten = get_post('ten') %}
+{% set kq=random(10) %}
+{% set so=random(1000) %}
+{% set rand1 = random(0..3) %}
+{% set rand2 = random(10..100) %}
+{% set rand3 = random(200..300) %}
+{% set id = get('guestbook')|split('@')[19]|trim %}
+{% if login %}
+{% if 'trom' in doc|lower or 'trộm' in doc|lower %}
+{% if get('user_'~login,'postguest') <= '49' %}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~log~' cần phải có ít nhất 50 chat-top mới có thể tiến hành ăn trộm!')}} 
+{{up('guestbook',id,'up') }}
+{% elseif rand1 == '0' %}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim-rand3)}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim+rand3)}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~log~' giở thói ăn cắp vặt, bị chụy @apple xinh gái bắt được, phạt trừ '~rand3~' xu vào tài khoản  :moew7:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% else %}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim+rand2)}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim-rand2)}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~log~' nhân lúc chụy @apple xinh gái không để ý đã giở thói ăn cắp vặt, chôm được '~rand2~' xu :menhera15:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% endif %}
+{% endif %}
+{% if 'quay' in doc|lower and get('user_'~login,'quayso')|trim < 1 %}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' phải có ít nhất 1 thẻ quay số mới có thể tham gia chương trình này nhé :qoopepe1: ')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif 'quay' in doc|lower and get('user_'~login,'quayso')|trim >= 1 %}
+{% if get('user_'~login,'xu') >='150' %}
+{% if kq =='1' %}
+{{ add('user_'~login,'xu',get('user_'~login,'xu')|trim+400) }}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' quay được số '~so~'! Xin chúc mừng bạn đã quay được giải nhất của chương trình quay số may mắn! Phần thưởng 400 xu! :ami16:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif kq=='2' %}
+{{ add('user_'~login,'xu',get('user_'~login,'xu')|trim+250) }}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' quay được số '~so~'! Xin chúc mừng bạn đã quay được giải nhì của chương trình quay số may mắn! Phần thưởng 250 xu! :ami16:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif kq=='3' %}
+{{ add('user_'~login,'xu',get('user_'~login,'xu')|trim+150) }}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' quay được số '~so~'! Xin chúc mừng bạn đã quay được giải ba của chương trình quay số may mắn! Phần thưởng 150 xu! :ami16:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% elseif kq=='4' %}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim+rand2)}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','@'~login~' quay được số '~so~'! Xin chúc mừng bạn đã quay được giải khuyến khích của chương trình quay số may mắn! Phần thưởng '~rand2~' xu! :ami16:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% else %}
+{{add('user_'~login,'xu',get('user_'~login,'xu')|trim-50)}}
+{{add('user_'~bot,'xu',get('user_'~bot,'xu')|trim+50)}}
+{{add('chat_'~id,'name',bot)}}
+{{add('chat_'~id,'time','now'|date('U'))}}
+{{add('chat_'~id,'comment','Hehe @'~login~' quay được số '~so~' chúc may mắn lần sau! @apple đã lấy của @'~login~' 50 xu làm chi phí ăn nhậu :troll18:')}} 
+{{up('guestbook',id,'up') }}
+{{add('user_'~bot,'postguest',get('user_'~bot,'postguest')|trim+1)}}
+{% endif %}
+{{add('user_'~login,'quayso',get('user_'~login,'quayso')|trim-1)}}
+{% endif %}
+{% endif %}
+{% endif %}
+{% endmacro %}

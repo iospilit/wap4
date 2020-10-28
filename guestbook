@@ -1,0 +1,46 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% set i=now|date("i","Asia/Ho_Chi_Minh")-9 %}{% if i <0%}{% set i=60+i %}{% endif %}
+{% set login = func.signin()|trim %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set total = user['smile']|trim|split('.')|length-1 %}
+{% set url = get_uri_segments() %}
+{% if login %}
+{% if url[0]=='guestbook' %}
+{% set title='Phòng trò chuyện' %}
+{{block('head')}}
+{% endif %}
+{% if get_data_count('guestbook')==0 %}
+{% for i in 1..20 %}
+{% set save=save_data('chat_'~i,{"name" :login,"time":'now'|date('U'),"comment":"tôi yêu việt nam"}|json_encode) %}
+{% endfor %}
+{% set save=save_data('guestbook',' 20 @  19 @  18 @  17 @  16 @  15 @  14 @  13 @  12 @  11 @  10 @  9 @  8 @  7 @  6 @  5 @  4 @  3 @  2 @  1 @ ') %}
+{% endif %}
+<div id="chat-room">
+ <div class="phdr border_blue" id="chat_phdr"> Trò chuyện/ <i class="fa fa-clock-o"></i> {{now|date("H","Asia/Ho_Chi_Minh")}}:{{i}} </div>
+{#<div class="gmenu"><i class="fa fa-question-circle"></i> Nếu xảy ra lỗi khi Chat hay tham gia quay số trong phòng Chat, xin hãy <a href="/community">Làm mới</a> lại trang để khắc phục sự cố!</div>#}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.7.0/jquery.validate.min.js"></script>
+<script type="text/javascript">var chatbox="../chat.php",loadcontent='<div class="menu">Đang tải dữ liệu <i class="fa fa-hourglass-half"></i></div>';$(document).ready(function(){$("#idChat").html(loadcontent),$.get(chatbox,function(t){$("#idChat").html(t).hide().slideDown("slow")}),reload_chat=setInterval(function(){$.get(chatbox,function(t){$("#idChat").html(t)})},4e3);var e=$("#form"),i=$("#submit"),o=$("#alert"),a=$("#postText");e.on("submit",function(t){if(t.preventDefault(),""==a)return o.show(),o.text("Bạn chưa nhập nội dung !!!"),$("#postText").focus(),!1;$.ajax({url:"../chat.php",type:"POST",timeout:7e3,dataType:"html",data:e.serialize(),beforeSend:function(){o.fadeOut(),i.html('Đang gửi <i class="fa fa-hourglass-half"></i>')},success:function(t){$.get(chatbox,function(t){$("#idChat").html(t).hide().slideDown("slow")}),e.trigger("reset"),$("#postText").focus(),$("#postText").val(""),i.html('<i class="fa fa-check"></i> Chat')},error:function(t){console.log(t)}})})});</script>
+{% set token = random(100000) %}
+{% if user['ban']=='1' %}
+<div class="room" align="center"><b><i class="fa fa-exclamation-triangle" aria-hidden="true"></i></b> Bố em hút rất nhiều thuốc =))</div>
+{% else %}
+<div class="room"><div class="menu-room"><table width="100%" border="0"><tr><td width="80%"> <form id="form" action="" method="POST" name="form">{% include 'toolbar' %}<textarea type= "text" id="postText" name="msg"></textarea><a id="upload" class="sub3"><i class="fa fa-upload" aria-hidden="true"></i></a><a class="sub3" href="javascript:show_hide('sm');"><i class="fa fa-smile-o" aria-hidden="true"></i></a><a class="sub3" href="/community"><i class="fa fa-refresh" aria-hidden="true"></i></a><button name="submit" type="submit" id="submit">Chat</button><input type="hidden" name="token" value="{{token}}"/></form></div></td></tr></table></div><input style="display:none" type="file" id="f" accept="image/*"><div id="sm" style="display:none">{% if user['smile']!='' and (user['smile']|trim|split('.')|length-1) >= 1 %}{% for i in 1..total %}{% set i = i|trim-1 %}<a href="javascript:tag(':{{user['smile']|trim|split('.')[i]}}', ':'); show_hide('sm');"><img src="https://moleys.github.io/assets/images/{{user['smile']|trim|split('.')[i]}}.png" width="50px" /></a>{% endfor %}<div><a href="/smile">[ Xem thêm Smile ]</a></div>{% else %}<a href="javascript:tag(':pepe{{i}}', ':'); show_hide('sm');">Bạn chưa có smile cá nhân. <a href="/smile">[ + Thêm mới ]</a>{% endif %}</div></div>
+{% endif %}
+<div id="alert"></div>
+<div id="postText"></div>
+<div id="idChat"></div>
+<script src="https://m.cafedang.xyz/assets/js/api.imgur.js"></script>
+<script>
+document.querySelector("#upload").onclick = function() {
+document.querySelector("#f").click();}
+imgur("#f",{loading : function(load) {document.querySelector("#upload").innerHTML = '<i class="fa fa-upload" aria-hidden="true"></i> '+load},
+loaded : function(link,size,type,time) {
+var input = $("textarea").val();
+$("textarea").val(input+" [img]"+link+"[/img] ");
+$("#upload").html('<i class="fa fa-upload" aria-hidden="true"></i>');}})
+</script>
+{% if url[0]=='guestbook' %}
+{{block('end')}}
+{% endif %}
+{% endif %}

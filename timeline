@@ -1,0 +1,65 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% import 'news' as news %}
+{% from 'function.twig' import time,slug,description,time %}
+{% from 'func.twig' import mi_get,get,html_decode %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% set user = get_data('user_'~signin)[0].data|json_decode %}
+{% set run = get_data('forum')[0].data|json_decode %}
+{% if signin %}
+{% if url[1]=='new' %}
+{% set title='Cập nhật trạng thái' %}
+{% set total = user['smile']|trim|split('.')|length-1 %}
+{{block('head')}}
+<div class="rmenu">- Hoạt động dòng thời gian chỉ dành cho thành viên, khách không thể xem nội dung người dùng chia sẻ, xin hãy lưu ý điều này.<br/>- Đặt tiêu đề bằng cách thêm vào nội dung bài viết với bbcode <b>[title]</b>Tiêu đề<b>[/title]</b>. Nếu nội dung bài viết không có bbcode này hoặc tiêu đề quá ngắn, thì bài viết sẽ được tự động trích dẫn 20 kí tự đầu để đặt tiêu đề cho bài viết.<br/>- Nội dung bài viết phải tuân thủ nội quy của weblog. (<a href="/community/faq.html">Xem tại đây</a>)</div>
+<div class="phdr border_red"><a href="/timeline">Dòng thời gian</a> » {{title}}</div>
+{% set msg=get_post('msg') %}
+{% set id=run['status']|trim+1 %}
+{% if request_method()|lower == "post" %} 
+{% set data = {"id":id,"doc":get_post('msg'),"comment":get_post("comment"),"view_mode":get_post("view_mode"),"author":signin,"time":"now"|date("U"),"total":0} %}
+<div class="menu">
+{% if (msg|length)>='20' %}
+{% set status = save_data_captcha('status_'~id,data|json_encode) %}
+{% if status != 'CAPTCHA_ERR' %}
+{% if get_post('view_mode')=='public' %}
+{{func.trom_up('status',id,'up')}}
+{{func.trom_up('status_'~signin,id,'up')}}
+{% else %}
+{{func.trom_up('status_'~signin,id,'up')}}
+{% endif %}
+{{func.add('forum','status',id)}}
+<font color="green">Bạn đã cập nhật trạng thái thành công. [<a href="/timeline/{{func.rwurl(h1)}}.{{id}}">xem bài viết</a>]</font>
+<script language="javascript" type="text/javascript"> 
+window.location.href="/timeline/{{func.rwurl(h1)}}.{{id}}"; 
+</script> 
+<META HTTP-EQUIV="Refresh" CONTENT="0;URL=/timeline/{{func.rwurl(h1)}}.{{id}}">
+{% else %}
+<font color="red">Vui lòng xác nhận <b>Tôi không phải người máy</b> !</font>
+{% endif %}
+{% else %}
+<font color="red">Cập nhật trạng thái thất bại. Độ dài nội dung không hợp lệ. Nội dung bạn đăng tải phải có độ dài tối thiểu là 20 kí tự !</font>
+{% endif %}
+</div>
+{% endif %}
+<form action="" method="POST" name="form" id="form">
+<div class="menu">
+<div>{% include 'toolbar' %}</div><textarea type= "text" name="msg" rows="8"></textarea>
+<div><b>Chế độ xem:</b><br/><input type="radio" name="view_mode" value="only" /> Chỉ mình tôi<br/><input type="radio" name="view_mode" value="public" checked="checked"/> Công khai<br/><input type="checkbox" name="comment" value="1" checked="checked"> Cho phép bình luận</div>
+<div align="center">{{captcha()|raw}}</div></div>
+<div class="menu"><center><button type="submit" class="button">Đăng lên dòng thời gian</button></center></div></div>
+</form>
+{% elseif url[1]=='edit' %}
+{% set id_topic=url[2] %}
+{% if get_data_count('topic_'~id_topic)>='1' and signin==func.rwurl(get('topic_'~id_topic,'author')) %}
+{{block('head')}}
+{% endif %}
+{% else %}
+{{block('head')}}
+
+{% endif %}
+{{block('end')}}
+{% else %}
+{% include '_404' %}
+{% endif %}

@@ -1,0 +1,90 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% set title='Danh sách smile' %}
+{% set login=func.login()|trim %}
+{{ block('head') }}
+{% set act = get_get('act') %}
+
+
+{% if act in ['pepe','ami','qoopepe','moew','menhera','dauhanh','troll','qoobee','dora','aru','thobaymau','nam'] %}
+{% if act=='pepe' %}
+{% set total='444' %}
+{% elseif act=='ami' %}
+{% set total='48' %}
+{% elseif act=='moew' %}
+{% set total='19' %}
+{% elseif act=='qoopepe' %}
+{% set total='17' %}
+{% elseif act=='menhera' %}
+{% set total='24' %}
+{% elseif act=='dauhanh' %}
+{% set total='131' %}
+{% elseif act=='troll' %}
+{% set total='132' %}
+{% elseif act=='qoobee' %}
+{% set total='127' %}
+{% elseif act=='dora' %}
+{% set total='303' %}
+{% elseif act=='aru' %}
+{% set total='119' %}
+{% elseif act=='thobaymau' %}
+{% set total='98' %}
+{% elseif act=='nam' %}
+{% set total='26' %}
+{% endif %}
+{% if act=='thobaymau' %}
+{% set smile='Thỏ bay màu' %}
+
+{% else %}
+{% set smile=act|capitalize %}
+{% endif %}
+{% set for %}
+{% for sm in 1..total %}
+{% if sm==total %}
+:{{act}}{{sm}}:
+{% else %}
+:{{act}}{{sm}}: 
+{% endif %}
+{% endfor %}
+{% endset %}
+{% set data=for|split(' ') %}
+{% endif %}
+
+{% set total=data|length %}
+{% set page_max=total//15 %} 
+{% if total//15 != total/15 %} 
+{% set page_max=total//15+1 %} 
+{% endif %} 
+{% set url=get_uri_segments() %} 
+{% set p= get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %} 
+{% set p=1 %} 
+{% endif %}
+{% if p>page_max %} 
+{% set p=page_max %} 
+{% endif %} 
+{% set st=p*15-15 %}
+<div class="phdr"><i class="fa fa-smile-o" aria-hidden="true"></i> <a href="/smile">Danh sách smile</a>{% if act!='' and act!=null %} | {{smile}} ({{total}}){% endif %}</div>
+<div class="menuItem">
+{% if login %}
+<div class="list1"><a href="/user/{{login}}/smile" style="color:darkviolet">Smile của tôi {% if func.get('user_'~login,'smile')!='' %}({{(func.get('user_'~login,'smile')|trim|split('.')|length)-1}}){% endif %}</a></div>
+{% endif %}
+{% if act!='' and act!=null %}
+<div class="list1">
+{% for i in data|slice(st,15) %}
+{% set img=i|replace({':': ""}) %}
+{% if login %}
+<a href="/user/{{login}}/smile?act=add&smile={{i|replace({':':''})}}">[ + ]</a>
+{% endif %}
+
+<img src="https://moleys.github.io/assets/images/{{img}}.png" alt="{{img}}"/> <b>{{i}}</b><br />
+{% endfor %}
+</div>
+ {{func.paging(url[0]~'?act='~get_get('act')~'&p',p,page_max)}} 
+{% else %}
+{% for sm in ['pepe.444','ami.48','qoopepe.17','moew.19','menhera.24','dauhanh.131','troll.132','qoobee.127','dora.303','aru.119','thobaymau.98','nam.26'] %}
+<div class="list1"><a href="?act={{sm|split('.')[0]}}">{% if sm|split('.')[0]=='thobaymau' %}Thỏ bay màu{% else %}{{sm|split('.')[0]|capitalize}}{% endif %} ({{sm|split('.')[1]}})</a></div>
+{% endfor %}
+{% endif %}
+</div>
+{{block('end')}}

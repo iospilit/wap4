@@ -1,0 +1,79 @@
+{% macro k_up(key,v,up) %} 
+{% set data = get_data_by_id(key,get_data(key)[0].id).data %} 
+{% set id = get_data(key)[0].id %} 
+{% if up %}
+{% set d=' @ '~v~' ' %}
+{% set data=data|replace({(d):""}) %}
+{% if get_data_count(key) == '0' %}
+{% set save=save_data(key,d) %}
+{% else %}
+{{ update_data_by_id(key,id,data~' @ '~v~' ') }}
+{% endif %}
+{% else %}
+{{save_data(key,v)}}
+{% endif %} 
+{% endmacro %}
+ {% macro k_del(key,v,up) %} 
+{% set data = get_data_by_id(key,get_data(key)[0].id).data %} 
+{% set id = get_data(key)[0].id %} 
+{% if up %}
+{% set d=' @ '~v~' ' %}
+{% set data=data|replace({(d):""}) %}
+{{ update_data_by_id(key,id,data) }}
+{% else %}
+ {{ delete_data_by_id(key,id) }}
+{% endif %} 
+{% endmacro %}
+
+{% macro mi_up(key,v) %}
+{% from 'function.twig' import id,up,add,mi_add,get %}
+{% from 'func.twig' import k_up,k_del %}
+{% set limit = '65000' %}
+{% set m = ' @ '~v~' ' %}
+{% set count = get_data_count(key) %}
+{% if count == '0' %}
+{{add(key,key~'-1',key~'-1')}}
+{{save_data(key~'-1',m)}}
+{% else %}
+{% set keycuoi = get(key)|json_decode|last %}
+{% set keycuoi_count = get_data(keycuoi)[0].data|json_encode|length|trim %}
+{% set keyy = get(key)|json_decode|join('@') %}
+{% set key_count = keyy|split('@')|length|trim+1 %}
+{% for i in keyy|split('@') %}
+{% set aa = get(i)|replace({' ':''})|trim|split('@') %}
+{% if v in aa %}
+{{k_del(i,v,'up')}}
+{% endif %}
+{% endfor %}
+{% if keycuoi_count > limit %}
+{{add(key,key~'-'~key_count,key~'-'~key_count)}}
+{{save_data(key~'-'~key_count,m)}}
+{% else %}
+{{k_up(keycuoi,v,'up')}}
+{% endif %}
+{% endif %}
+{% endmacro %}
+{% macro mi_get(key) %}{% for value in get_data(key)|last.data|json_decode %}
+{{get_data(value)|last.data}}{% endfor %}{% endmacro %}
+
+
+{% macro mi_del(key,v) %}
+{% from 'function.twig' import get %}
+{% from 'func.twig' import k_del %}
+{% set keyy = get(key)|json_decode|join('@') %}
+{% for i in keyy|split('@') %}
+{{k_del(i,v,'up')}}
+{% endfor %}
+{% endmacro %}
+
+
+{% macro get(key,v,r) %}{% set data='' %}{% for i in 0..get_data_count(key)-1%}
+{% set k = get_data(key,100,i//100+1)[i%100].data %}{% set data=data~k %}{% endfor %}{% if v %}{% set post = data|json_decode %}{% if r %}{{post[v]|replace({"(khoahoc.tv)":""})|raw}}{%
+else %}{{post[v]}}{% endif %}{% else %}
+{% set post = data %}{{post}}{% endif %}{% endmacro %}
+
+{% macro html_decode(text) %}{% spaceless %}
+{% set data = text|replace({"aacute;":"á","acirc;":"â","&amp;":"","iacute;":"í","ecirc;":"ê","agrave;":"à","ocirc;":"ô","oacute;":"ó","igrave;":"ì","atilde;":"ã","uacute;":"ú","yacute;":"ý","ograve;":"ò","Acirc;":"Â","Yacute;":"Ý","&quot;":"”","eacute;":"é","egrave;":"è","gt;":">","&gt;&gt;&gt;":">>>","hellip;":"…","quot;":"”","ugrave;":"ù","otilde;":"õ","Ocirc;":"Ô","amp;":"","Igrave;":"Ì","Agrave;":"À","Aacute;":"Á","Uacute;":"Ú"}) %}
+{{data}}
+{% endspaceless %}
+{% endmacro %}

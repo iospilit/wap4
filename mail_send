@@ -1,0 +1,84 @@
+{% import '_functions' as func %}
+{% set login = func.signin()|trim %}
+{% set url = get_uri_segments() %}
+{% set user = get_data('user_'~login)[0].data|json_decode %}
+{% set forum = get_data('forum')[0].data|json_decode %}
+{% set total = user['smile']|trim|split('.')|length-1 %}
+{% if request_method()|lower == "post" %}
+{% set msg = get_post('msg') %}
+{% set id = forum['mail']|trim+1 %}
+{% set doc = {"name":login,"id":id,"comment":msg,"time":"now"|date("U"),"view":"no"}|json_encode %}
+{% if msg|length < '3' or msg|length > '16000' %}
+<div class="menuItem"> Nội dung không hợp lệ</div>
+{% else %}
+{% if user['act']!='1' %}
+{% set status=save_data_captcha('mail_'~id,doc) %}
+{% if msg and user['n_mail']|trim|raw!=msg and status != 'CAPTCHA_ERR' %}
+{{func.add('user_'~login,'n_mail',msg)}}
+{# list me #}
+{{func.up('list_mail_'~login,url[1],'up')}}
+{# kt list me #}
+{# list you #}
+{{func.up('list_mail_'~url[1],login,'up')}}
+{# kt list you #}
+{# show ds me #}
+{{func.up('mail_'~login~'_'~url[1],id,'up')}}
+{# kt show ds me #}
+{# show ds you #}
+{{func.up('mail_'~url[1]~'_'~login,id,'up')}}
+{# kt show ds you #}
+{# new inbox #}
+{{func.up('new_mail_'~url[1],login,'up')}}
+{# kt new mail #}
+{# up + inbox #}
+{{func.add('forum','mail',id)}}
+{# kt up+ inbox #}
+{% else %}
+<div class="rmenu">Gửi tin nhắn thất bại ! {% if user['act']!='1' %}{#Có thể b#}Bạn chưa xác minh Tôi không phải là người máy.{#, nếu bạn thấy việc xác minh này là phiền toái, vui lòng liên hệ với {{func.bbcode('@valerat02')}} để được kích hoạt tài khoản!#}{% endif %}</div>
+{% endif %}
+{% else %}
+{% if msg and user['n_mail']|trim|raw!=msg %}
+{% set save=save_data('mail_'~id,doc) %}
+{{func.add('user_'~login,'n_mail',msg)}}
+{# list me #}
+{{func.up('list_mail_'~login,url[1],'up')}}
+{# kt list me #}
+{# list you #}
+{{func.up('list_mail_'~url[1],login,'up')}}
+{# kt list you #}
+{# show ds me #}
+{{func.up('mail_'~login~'_'~url[1],id,'up')}}
+{# kt show ds me #}
+{# show ds you #}
+{{func.up('mail_'~url[1]~'_'~login,id,'up')}}
+{# kt show ds you #}
+{# new inbox #}
+{{func.up('new_mail_'~url[1],login,'up')}}
+{# kt new mail #}
+{# up + inbox #}
+{{func.add('forum','mail',id)}}
+{# kt up+ inbox #}
+{% else %}
+<div class="rmenu">Gửi tin nhắn thất bại !</div>
+{% endif %}
+{% endif %}
+{% endif %}
+
+
+
+{% endif %}
+{{func.del('new_mail_'~login,url[1],'up')}}
+
+{% set token = random(100000) %}
+<div class="room"><div class="menu-room"><table width="100%" border="0"><tr><td width="80%"> <form id="form" action="" method="POST" name="form">{% include 'toolbar' %}<textarea type= "text" id="postText" name="msg"></textarea>{% if user['act']!='1' %}<center>{{captcha()|raw}}</center>{% endif %}<a class="sub3" href="javascript:show_hide('sm');"><i class="fa fa-smile-o" aria-hidden="true"></i></a><a class="sub3" href="/mail/{{url[1]}}"><i class="fa fa-refresh" aria-hidden="true"></i></a><button name="submit" type="submit" id="submit">Gửi</button><input type="hidden" name="token" value="{{token}}"/></form></div></td></tr></table></div>
+<div id="sm" style="display:none">
+{% if user['smile']!='' and (user['smile']|trim|split('.')|length-1) >= 1 %}
+	 {% for i in 1..total %}
+{% set i = i|trim-1 %}
+	    <a href="javascript:tag(':{{user['smile']|trim|split('.')[i]}}', ':'); show_hide('sm');"><img src="https://moleys.github.io/assets/images/{{user['smile']|trim|split('.')[i]}}.png" width="50px" /></a>
+	  {% endfor %}
+{% else %}
+<a href="javascript:tag(':pepe{{i}}', ':'); show_hide('sm');">Bạn chưa có smile cá nhân. <a href="/smile">[ + Thêm mới ]</a>
+{% endif %}
+ </div>
+</div>

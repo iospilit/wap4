@@ -1,0 +1,39 @@
+{% use '_includes_forum' %}
+{% import '_functions' as func %}
+{% import '_avatar' as avatar %}
+{% set url = get_uri_segments() %}
+{% set signin = func.signin()|trim %}
+{% if signin %}
+{% set title = 'Danh mục nghe nhạc' %}
+{% set list = '2+1=0@Bụi bay vào mắt@Vì sao@Khi ta cùng nhau hát vang@Công chúa bong bóng@Amu to emu no uta@Hurricaneger Sanjou!@Đứa con hư! Xin lỗi mẹ@Ừ Có anh đây@Tau thích mi@Một vòng trái đất@Cô gái M52@99 phần trăm@Người vô hình@Lời anh phải nói@Sai lầm của anh@Nỗi buồn mang tên yêu xa@Mình xa mình yêu@Anh nhớ em người yêu cũ@Ngôi nhà hoa hồng@Tình yêu hoa gió@Xe đạp@Chiếc khăn gió ấm@Ai cũng có ngày xưa@Làm người yêu anh nhé baby@Thu cuối@Thu cuối PB tiếng Nhật@' %}
+{% set music = {"khi-ta-cung-nhau-hat-vang":"Khi ta cùng nhau hát vang|@|https://valedrit.github.io/mp3/khi-ta-cung-nhau-hat-vang.mp3|@|Mì tôm OST - Phạm Minh Thành","amu-to-emu-no-uta":"Amu to emu no uta|@|https://valedrit.github.io/mp3/amu-to-emu-no-uta.mp3|@|Doraemon OST","dua-con-hu-xin-loi-me":"Đứa con hư! Xin lỗi mẹ|@|https://valedrit.github.io/mp3/dua-con-hu-xin-loi-me.mp3|@|Spunty","tau-thich-mi":"Tau thích mi|@|https://valedrit.github.io/mp3/tau-thich-mi.mp3|@|Lil Pig","mot-vong-trai-dat":"Một vòng trái đất|@|https://valedrit.github.io/mp3/mot-vong-trai-dat.mp3|@|Minh Hằng ft Tim","co-gai-m52":"Cô gái M52|@|https://valedrit.github.io/mp3/co-gai-m52.mp3|@|Huy ft Tùng Viu","bui-bay-vao-mat":"Bụi bay vào mắt|@|https://valedrit.github.io/mp3/bui-bay-vao-mat.mp3|@|Phạm Quỳnh Anh","cong-chua-bong-bong":"Công chúa bong bóng|@|https://valedrit.github.io/mp3/cong-chua-bong-bong.mp3|@|Bảo Thy","99-phan-tram":"99 phần trăm|@|https://valedrit.github.io/mp3/99-phan-tram.mp3|@|Lý Hào Nam","2-1-0":"2+1=0|@|https://valedrit.github.io/mp3/2+1=0.mp3|@|Quang Vinh, Phi Hùng, Kiwi Ngô Mai Trang","vi-sao":"Vì sao|@|https://valedrit.github.io/mp3/vi-sao.mp3|@|Khởi My ft Hoàng Rapper","loi-anh-phai-noi":"Lời anh phải nói|@|https://valedrit.github.io/mp3/loi-anh-phai-noi.mp3|@|Ba chú bộ đội","lam-nguoi-yeu-anh-nhe-baby":"Làm người yêu anh nhé baby|@|https://valedrit.github.io/mp3/lam-nguoi-yeu-anh-nhe-baby.mp3|@|Ba chú bộ đội","u-co-anh-day":"Ừ Có anh đây|@|https://valedrit.github.io/mp3/u-co-anh-day.mp3|@|Tino","sai-lam-cua-anh":"Sai lầm của anh|@|https://valedrit.github.io/mp3/sai-lam-cua-anh.mp3|@|Đình Dũng","noi-buon-mang-ten-yeu-xa":"Nỗi buồn mang tên yêu xa|@|https://valedrit.github.io/mp3/noi-buon-mang-ten-yeu-xa.mp3|@|Trung Thông","minh-xa-minh-yeu":"Mình xa mình yêu|@|https://valedrit.github.io/mp3/minh-xa-minh-yeu.mp3|@|Juun Đăng Dũng","anh-nho-em-nguoi-yeu-cu":"Anh nhớ em người yêu cũ|@|https://valedrit.github.io/mp3/anh-nho-em-nguoi-yeu-cu.mp3|@|Minh Vương M4U","hurricaneger-sanjou":"Hurricaneger Sanjou!|@|https://valedrit.github.io/mp3/hurricaneger-sanjou.mp3|@|Super sentai OST","ngoi-nha-hoa-hong":"Ngôi nhà hoa hồng|@|https://valedrit.github.io/mp3/ngoi-nha-hoa-hong.mp3|@|Quang Vinh, Bảo Thy","xe-dap":"Xe đạp|@|https://valedrit.github.io/mp3/xe-dap.mp3|@|Thùy Chi","chiec-khan-gio-am":"Chiếc khăn gió ấm|@|https://valedrit.github.io/mp3/chiec-khan-gio-am.mp3|@|Khánh Phương","ai-cung-co-ngay-xua":"Ai cũng có ngày xưa|@|https://valedrit.github.io/mp3/ai-cung-co-ngay-xua.mp3|@|Phan Mạnh Quỳnh","nguoi-vo-hinh":"Người vô hình|@|https://valedrit.github.io/mp3/nguoi-vo-hinh.mp3|@|Minh Hằng","tinh-yeu-hoa-gio":"Tình yêu hoa gió|@|https://valedrit.github.io/mp3/tinh-yeu-hoa-gio.mp3|@|Trương Thế Vinh","thu-cuoi":"Thu cuối|@|https://valedrit.github.io/mp3/thu-cuoi.mp3|@|MrT ft Yanbi & Hằng BingBoong","thu-cuoi-pb-tieng-nhat":"Thu cuối PB tiếng Nhật|@|https://valedrit.github.io/mp3/thu-cuoi-syuta0516.mp3|@|syuta0516"} %}
+{% set name = music[get_get('select')]|split('|@|')[0] %}
+{% set link = music[get_get('select')]|split('|@|')[1] %}
+{% set singer = music[get_get('select')]|split('|@|')[2] %}
+{{block('head')}}
+<div class="phdr">Nghe nhạc</div>
+<div class="rmenu">{% if get_get('music')=='on' %}{{set_cookie('music','yes')}}{{set_cookie('music_name','null')}}{{set_cookie('music_link','null')}}Bật nghe nhạc thành công! <a href="/community">Làm mới lại</a> trang để tận hưởng bạn nhé :)){% elseif get_get('music')=='off' %}{{delete_cookie('music','yes')}}{{delete_cookie('music_name','null')}}{{delete_cookie('music_link','null')}}Bạn đã tắt nhạc!  <a href="/mp3">Làm mới lại</a> trang để trở về trạng thái tĩnh.{% else %}{% if get_cookie('music')!='yes' %}Bạn có muốn bật trình phát nhạc không? (<a href="?music=on">bật</a>){% else %}Bạn có muốn tắt trình phát nhạc không? (<a href="?music=off">tắt</a>){% endif %}{% endif %}{% if music[get_get('select')]!='' and get_get('select')!='' %}<br/>{% if get_cookie('music')=='yes' %}{{set_cookie('music_name',name)}}{{set_cookie('music_link',link)}}Bạn đang lựa chọn bài <b>{{get_cookie('music_name')}}</b> {% if singer!='' %}(<font color="violet">{{singer}}</font>){% endif %}. Chúc bạn nghe nhạc vui vẻ!{% else %}Xin lỗi, bạn không thể lựa chọn bài khi chưa bật trình phát nhạc!{% endif %}{% endif %}</div>
+<div class="phdr">Danh sách bài hát</div>
+{% set per = '20' %}
+{% set data = list|split('@') %}
+{% set total=data|length-1 %}
+{% set page_max=total//per %}
+{% if total//per != total/per %}
+{% set page_max=total//per+1 %}
+{% endif %}
+{% set p=get_get('p')|default(1) %}
+{% if p matches '/[a-zA-z]|%/' or p<1 %}
+{% set p=1 %}
+{% endif %}
+{% if p>page_max %}
+{% set p=page_max %}
+{% endif %}
+{% set st=p*per-per %}
+{% for i in data|slice(0,total)|slice(st,per) %}
+<div class="menu-topic"><i class="fa fa-headphones" aria-hidden="true"></i> <b>{{i}}</b> (<a href="?select={{func.rwurl(i)}}">Chọn</a>)</div>
+{% endfor %}
+{{func.paging(''~url|join('/')~'?p',p,page_max)}}
+{{block('end')}}
+{% else %}
+{% include '_404' %}
+{% endif %}
